@@ -17,7 +17,7 @@ async def parse(bot):
 
     while True:
         search_requests = await SearchRequestsDbManager.get_all(loop)
-        '''
+
         #  0
         
         await hypedc_com(bot, search_requests)
@@ -49,9 +49,16 @@ async def parse(bot):
         await snkrs_com(bot, search_requests)
         await thenextdoor_fr(bot, search_requests)
         await the_broken_arm_com(bot, search_requests)
-        await zalando_fr(bot, search_requests)
-        '''
-        await zalando_fr(bot, search_requests)
+
+        try:
+            await zalando_fr(bot, search_requests)
+        except Exception:
+            print('Exception: zalando_fr')
+        await einhalb_com(bot, search_requests)
+        await asphaltgold_com(bot, search_requests)
+        await allikestore_com(bot, search_requests)
+        await kickz_com(bot, search_requests)
+        await kickzpremium_com(bot, search_requests)
 
         time.sleep(3)
 
@@ -1025,7 +1032,213 @@ async def zalando_fr(bot, search_requests):
             print(item_url)
 
 
+async def einhalb_com(bot, search_requests):
+    html = await get_html('https://www.43einhalb.com/en/sneaker')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'itemWrapper pOverlay'})
+    print(len(items))
+
+    for sr in search_requests:
+        request_lower_case = sr.request.lower()
+        request_lower_case = request_lower_case.replace(' ', '')
+
+        for item in items:
+            item_url = 'https://www.43einhalb.com/' + item.findChildren('a', {'class': 'plink image'})[0]['href']
+            item_price = item.findChildren('span', {'class': 'pPrice'})[0].text
+            item_price = item_price.replace('\t', '')
+            item_price = item_price.replace('\n', '')
+            item_price = item_price.replace(' ', '')
+            brand = item.findChildren('span', {'class': 'producerName'})[0].text
+            name = item.findChildren('span', {'class': 'productName'})[0].text
+            item_name = brand + ' ' + name
+            item_lower_case = item_name.lower()
+            item_lower_case = item_lower_case.replace(' ', '')
+            item_lower_case = item_lower_case.replace('-', '')
+            sizes = bs.find_all('ul', {'class': 'availableVariants'})[0]
+            sizes = sizes.findChildren('a')
+
+            if request_lower_case not in item_lower_case:
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.the_broken_arm_com_tex(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+#  FAIL
+async def afew_store_com(bot, search_requests):
+    html = await get_html('https://www.afew-store.com/en/sneaker/')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('a', {'class': 'findify-components--cards--product'})
+    print(len(items))
+
+
+async def asphaltgold_com(bot, search_requests):
+    html = await get_html('https://www.asphaltgold.com/de/category/men/sneaker/new/')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('a', {'class': 'product-url'})
+    print(len(items))
+
+    for sr in search_requests:
+        request_lower_case = sr.request.lower()
+        request_lower_case = request_lower_case.replace(' ', '')
+
+        for item in items:
+            item_url = 'https://www.asphaltgold.com/' + item['href']
+            brand = item.findChildren('div', {'class': 'product-brand ng-star-inserted'})[0].text
+            name = item.findChildren('div', {'class': 'product-name'})[0].text
+            item_name = brand + ' ' + name
+            item_price = item.findChildren('div', {'class': 'price'})[0].text
+            item_price = item_price.replace(' ', '')
+            item_lower_case = item_name.lower()
+            item_lower_case = item_lower_case.replace(' ', '')
+            item_lower_case = item_lower_case.replace('-', '')
+
+            if request_lower_case not in item_lower_case:
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def allikestore_com(bot, search_requests):
+    html = await get_html('https://www.allikestore.com/default/sneakers/mens-sneakers.html#page=1')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'item'})
+    print(len(items))
+
+    for sr in search_requests:
+        request_lower_case = sr.request.lower()
+        request_lower_case = request_lower_case.replace(' ', '')
+
+        for item in items:
+            url = item.findChildren('a', {'class': 'product-image'})[0]
+            item_url = url['href']
+            item_name = url['title']
+            item_price = item.findChildren('span', {'class': 'regular-price'})[0].text
+            item_lower_case = item_name.lower()
+            item_lower_case = item_lower_case.replace(' ', '')
+            item_lower_case = item_lower_case.replace('-', '')
+            sizes = item.findChildren('div', {'class': 'available-sizes'})[0].text
+
+            if 'Sizes Available' not in sizes:
+                sizes = ''
+
+            if request_lower_case not in item_lower_case:
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.allikestore_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+#  FAIL
+async def bstn_com(bot, search_requests):
+    html = await get_html('https://www.bstn.com/en/new-arrivals/filter/__category_footwear/page/1/sort/date_new')
+    bs = BeautifulSoup(html, 'lxml')
+    print(html)
+    items = bs.find_all('li', {'class': 'item'})
+    print(len(items))
+
+
+async def kickz_com(bot, search_requests):
+    html = await get_html('https://www.kickz.com/de/shop/herrenschuhe')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'categoryContent'})[0]
+    items = items.findChildren(recursive=False)
+    print(len(items))
+
+    for sr in search_requests:
+        request_lower_case = sr.request.lower()
+        request_lower_case = request_lower_case.replace(' ', '')
+
+        for item in items:
+            item_url = item.findChildren('button', {'class': 'btn ref_link'})[0]['href']
+            brand = item.findChildren('span', {'class': 'categoryElementHeadlineContent'})[0].text
+            name = item.findChildren('div', {'class': 'catalogItemName'})[0].text
+            item_name = brand + ' ' + name
+            item_price = item.findChildren('span', {'class': 'price'})[0].text
+            item_lower_case = item_name.lower()
+            item_lower_case = item_lower_case.replace(' ', '')
+            item_lower_case = item_lower_case.replace('-', '')
+            sizes = item.findChildren('ul', {'class': 'list-group'})[0]
+            sizes = sizes.findChildren()
+
+            if request_lower_case not in item_lower_case:
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.basket4ballers_com(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def kickzpremium_com(bot, search_requests):
+    html = await get_html('https://www.kickzpremium.com/de/Maenner/schuhe/c')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'categoryContent'})[0]
+    items = items.findChildren(recursive=False)
+    print(len(items))
+
+    for sr in search_requests:
+        request_lower_case = sr.request.lower()
+        request_lower_case = request_lower_case.replace(' ', '')
+
+        for item in items:
+            item_url = item.findChildren('button', {'class': 'btn ref_link'})[0]['href']
+            brand = item.findChildren('span', {'class': 'categoryElementHeadlineContent'})[0].text
+            name = item.findChildren('div', {'class': 'catalogItemName'})[0].text
+            item_name = brand + ' ' + name
+            item_price = item.findChildren('span', {'class': 'price'})[0].text
+            item_lower_case = item_name.lower()
+            item_lower_case = item_lower_case.replace(' ', '')
+            item_lower_case = item_lower_case.replace('-', '')
+            sizes = item.findChildren('ul', {'class': 'list-group'})[0]
+            sizes = sizes.findChildren()
+
+            if request_lower_case not in item_lower_case:
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.basket4ballers_com(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
     search_requests = [SearchRequest(1, 'stan smith', 640641207491493888)]
-    loop.run_until_complete(zalando_fr(123, search_requests))
+    loop.run_until_complete(kickzpremium_com(123, search_requests))

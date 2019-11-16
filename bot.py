@@ -14,8 +14,7 @@ PARSER_STARTED = False
 
 bot.loop.create_task(parse(bot))
 
-
-loop.run_until_complete(ItemsShowedDbManager.clear(loop))
+#loop.run_until_complete(ItemsShowedDbManager.clear(loop))
 
 
 @bot.command(name='add-to-search')

@@ -133,7 +133,10 @@ def common_text(url, item_name, price):
 def basket4ballers_com(url, item_name, sizes, price):
     sizes_text = ''
     for size in sizes:
-        sizes_text += f'''\n{size.text}'''
+        txt = size.text
+        txt = txt.replace('\n', '')
+        txt = txt.replace('\t', '')
+        sizes_text += f'''\n{txt}'''
 
     text = f'''**{item_name}**
 
@@ -240,3 +243,16 @@ def the_broken_arm_com_tex(url, item_name, sizes, price):
     text += sizes_text
 
     return text
+
+
+def allikestore_com_text(url, item_name, sizes, price):
+    sizes = sizes.replace('Sizes Available', '**Размеры**')
+    text = f'''**{item_name}**
+
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+{sizes}'''
+    return text
+
