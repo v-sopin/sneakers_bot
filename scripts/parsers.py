@@ -15,9 +15,9 @@ async def parse(bot):
 
     while True:
         search_requests = await SearchRequestsDbManager.get_all(loop)
-
+        '''
         cur = time.time()
-
+        
         #  0
         
         await hypedc_com(bot, search_requests)
@@ -70,17 +70,24 @@ async def parse(bot):
             await zupport_de(bot, search_requests)
         except Exception:
             print('Exception: zupport_de')
+        await aw_lab_com(bot, search_requests)
+        await back_door_it(bot, search_requests)
+        await blackboxstore_com(bot, search_requests)
+        # https://www.excelsiormilano.com/
+        await footdistrict_com(bot, search_requests)
+        '''
 
+        await footdistrict_com(bot, search_requests)
 
-        print('Result: ', time.time() - cur)
+        # print('Result: ', time.time() - cur)
 
 
 def compare(request, search_result):
     request = request.lower()
-    request = request.replace(' ', '')
     search_result = search_result.lower()
     search_result = search_result.replace(' ', '')
     search_result = search_result.replace('-', '')
+    search_result = search_result.replace('\n', '')
     keywords = request.split(' ')
 
     access = True
@@ -1276,7 +1283,147 @@ async def zupport_de(bot, search_requests):
             print(item_url)
 
 
+async def aw_lab_com(bot, search_requests):
+    html = await get_html('https://www.aw-lab.com/shop/uomo/scarpe')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-data-container'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('h2', {'class': 'product-name'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = item.findChildren('div', {'class': 'product-detail-link'})[0]
+            item_url = item_url.findChildren('a')[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('p', {'class': 'small-price'})[0].text
+            item_price = item_price.replace(' ', '')
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+#  FAIL
+async def antonioli_eu(bot, search_requests):
+    html = await get_html('https://www.antonioli.eu/en/UA/men/t/categories/shoes/sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    print(html)
+    items = bs.find_all('article', {'class': 'product'})
+    print(len(items))
+
+
+async def back_door_it(bot, search_requests):
+    html = await get_html('https://www.back-door.it/product-category/sneakers/#Sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('a', {'class': 'product-category product-info'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('h6', {'itemprop': 'name'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = item['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('span', {'class': 'woocommerce-Price-amount amount'})[0].text
+            item_price = item_price.replace(' ', '')
+            item_price = item_price.replace('\n', '')
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def blackboxstore_com(bot, search_requests):
+    html = await get_html('https://www.blackboxstore.com/it/sneakers/uomo.html')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'item'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('span', {'class': 'brand-name'})[0].text
+            name = item.findChildren('h2', {'class': 'product-name'})[0].text
+            item_name = brand + ' ' + name
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = item.findChildren('a', {'class': 'product-image'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('span', {'class': 'price'})[0].text
+            item_price = item_price.replace(' ', '')
+            item_price = item_price.replace('\n', '')
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            sizes = bs.find_all('span', {'class': 'swatch-label'})
+
+            text = tp.bouncewear_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def footdistrict_com(bot, search_requests):
+    html = await get_html('https://footdistrict.com/novedades.html')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'item'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('img', {'itemprop': 'image'})[0]['alt']
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = item.findChildren('a', {'class': 'mp_quickview_icon mobilehidden'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('span', {'class': 'price'})[0].text
+            item_price = item_price.replace(' ', '')
+            item_price = item_price.replace('\n', '')
+
+            text = tp.common_text(item_url, item_name, item_price)
+            print(text)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
     search_requests = [SearchRequest(1, 'stan smith', 640641207491493888)]
-    loop.run_until_complete(zupport_de(123, search_requests))
+    loop.run_until_complete(footdistrict_com(123, search_requests))

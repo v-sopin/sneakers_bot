@@ -257,3 +257,22 @@ def allikestore_com_text(url, item_name, sizes, price):
 {sizes}'''
     return text
 
+
+def footdistrict_com_text(url, item_name, sizes, price):
+    sizes_text = ''
+    if sizes is not []:
+        sizes_text = '''**Размеры**'''
+        for size in sizes[1:]:
+            txt = size.text.replace('\n', '')
+            if 'No disponible' not in txt:
+                sizes_text += f'''\n{txt}'''
+    text = f'''**{item_name}**
+
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+
+    return text
