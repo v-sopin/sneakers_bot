@@ -1,12 +1,12 @@
-TOKEN = 'NjM5MjA0MzM1Mjg4MzIwMDIx.XbyKMw.kuRnaR14ii01CkPvlM8sR4Dj1Y8'
-GUILD_ID = 639208822896066560
+TOKEN = 'NjQ1Mjg2ODIyODU5MTEyNDQ4.XdAYeQ.CSXKIA-RAk8JpyncMUfPSkhs81k' #'NjM5MjA0MzM1Mjg4MzIwMDIx.Xc_tsw.6j2dp-DPNlUFPbFw8RTAZU-8a6U'
+GUILD_ID = 634778226346164256
 CHANEL_NAME = 'general'
 RESULTS_CATEGORY_NAME = 'sneakers'
 
-DB_NAME = 'sneakersbotdb'
-DB_PASSWORD = 'vlad1550vlad1550'
+DB_NAME = 'sneakersbotdb'  #'sneakerbotdb'
+DB_PASSWORD = 'vlad1550vlad1550'  #'Sneakerpass1337*'
 DB_HOST = 'localhost'
-DB_USER = 'root'
+DB_USER = 'root'  #'discordbot'
 
 DEVELOPER_ID = 638328163499376642
 ADMINS = []

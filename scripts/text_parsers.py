@@ -231,8 +231,9 @@ def the_broken_arm_com_tex(url, item_name, sizes, price):
     if sizes is not []:
         sizes_text = '''**Размеры**'''
         for size in sizes[1:]:
-            if 'OUT OF STOCK' not in size.text:
-                sizes_text += f'''\n{size.text}'''
+            txt = size.text.replace('\n', '')
+            if 'OUT OF STOCK' not in txt:
+                sizes_text += f'''\n{txt}'''
     text = f'''**{item_name}**
 
 **Цена:** {price}

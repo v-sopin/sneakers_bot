@@ -2,8 +2,6 @@ import time
 import json
 import asyncio
 import aiohttp
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from scripts.db_manager import SearchRequestsDbManager, ItemsShowedDbManager
 from scripts.models import SearchRequest
@@ -17,6 +15,8 @@ async def parse(bot):
 
     while True:
         search_requests = await SearchRequestsDbManager.get_all(loop)
+
+        cur = time.time()
 
         #  0
         
@@ -59,8 +59,36 @@ async def parse(bot):
         await allikestore_com(bot, search_requests)
         await kickz_com(bot, search_requests)
         await kickzpremium_com(bot, search_requests)
+        
+        #  30
+        
+        await rimowa_com(bot, search_requests)
+        # http://thegoodwillout.com/
+        await suppastore_com(bot, search_requests)
+        await vooberlin_com(bot, search_requests)
+        try:
+            await zupport_de(bot, search_requests)
+        except Exception:
+            print('Exception: zupport_de')
 
-        time.sleep(3)
+
+        print('Result: ', time.time() - cur)
+
+
+def compare(request, search_result):
+    request = request.lower()
+    request = request.replace(' ', '')
+    search_result = search_result.lower()
+    search_result = search_result.replace(' ', '')
+    search_result = search_result.replace('-', '')
+    keywords = request.split(' ')
+
+    access = True
+    for k in keywords:
+        if k not in search_result:
+            access = False
+
+    return access
 
 
 async def get_html(url):
@@ -76,17 +104,12 @@ async def hypedc_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             brand_name = item.findChildren('span', {'class': 'brand-name'})
             product_name = item.findChildren('h5', {'class': 'product-name h4'})
             item_name = brand_name[0].text + ' ' + product_name[0].text
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             item_url_el = item.findChildren('a')[0]
@@ -114,15 +137,10 @@ async def subtypestore_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
-            item_name = item.findChildren('h3', {'class': 'mb-2 font-bold'})
-            item_lower_case = item_name[0].text.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
+            item_name = item.findChildren('h3', {'class': 'mb-2 font-bold'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             item_url = 'https://www.subtypestore.com' + item['href']
@@ -136,9 +154,9 @@ async def subtypestore_com(bot, search_requests):
             price = bs.find('p', {'class': 'mt-8 text-center cols:text-left'})
             item_sizes = bs.find_all(lambda tag: tag.name == 'span' and tag.has_attr('data-v-3a6c81cc') and not tag.has_attr('class'))
 
-            text = tp.subtypestore_com_text(item_url, item_name[0].text, item_sizes, price.text)
+            text = tp.subtypestore_com_text(item_url, item_name, item_sizes, price.text)
 
-            await ItemsShowedDbManager.add(item_name[0].text, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -153,17 +171,11 @@ async def lockwood_avenue_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_info = item.findChildren('a')[0]
             item_name = item_info['title']
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             item_url = item_info['href']
@@ -194,19 +206,13 @@ async def footshop_eu(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item['href']
             item_name = item.findChildren('h4', {'class': 'Product_name_3eWGG'})[0].text
             item_price = item.findChildren('strong', {'itemprop': 'price'})[0]
             item_price = item_price['content'] + ' €'
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -228,19 +234,13 @@ async def footshop_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item['href']
             item_name = item.findChildren('h4', {'class': 'Product_name_3eWGG'})[0].text
             item_price = item.findChildren('strong', {'itemprop': 'price'})[0]
             item_price = item_price['content'] + ' €'
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -281,9 +281,6 @@ async def rezetstore_dk(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = 'https://rezetstore.dk' + item['href']
             brand = item.findChildren('p', {'class': 'ProductTeaser__brand'})[0].text
@@ -295,10 +292,7 @@ async def rezetstore_dk(bot, search_requests):
             item_price = item_price[0].text
             item_sizes = item.findChildren('span', {'class': 'ProductTeaserSizes__list-item'})
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -319,10 +313,6 @@ async def stormfashion_dk(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-        request_lower_case = request_lower_case.replace('-', '')
-
         for item in items:
             item_url = 'https://stormfashion.dk/' + item.findChildren('a')[0]['href']
             item_name = item_url.split('/')[-1]
@@ -333,7 +323,7 @@ async def stormfashion_dk(bot, search_requests):
                 text += i
             item_lower_case = text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_lower_case):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -362,19 +352,14 @@ async def stoy_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a')[0]['href']
             brand = item.findChildren('div', {'class': 'brand'})[0].text
             name = item.findChildren('div', {'class': 'name'})[0].text
             item_name = brand + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'price'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -396,23 +381,18 @@ async def dev_thegoodlifespace_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product-item-link'})[0]['href']
             brand = item.findChildren('p')[0].text
             name = item.findChildren('a', {'class': 'product-item-link'})[0].text
             item_name = brand + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'price'})
             if len(item_price) == 0:
                 item_price = 'Sold out'
             else:
                 item_price = item_price[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -434,19 +414,14 @@ async def basket4ballers_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item['href']
             item_name = item.findChildren('h2', {'class': 'block-product__name'})[0].text
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             sizes = item.findChildren('li', {'class': 'block-product__attributes-item'})
             item_price = item.findChildren('span', {'class': 'block-product__price'})[0].text
             item_price = item_price[:-4]
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -468,17 +443,12 @@ async def bouncewear_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a')[0]['href']
             item_name = item.findChildren('p', {'class': 'product__name'})[0].text
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('p', {'class': 'product__price'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -514,19 +484,14 @@ async def chezvibe_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product_img_link'})[0]['href']
             brand = item.findChildren('h5', {'id': 'manufacturer'})[0].text
             name = item.findChildren('a', {'class': 'product-name'})[0].text
             item_name = brand + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'price product-price'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -562,18 +527,13 @@ async def galerieslafayette_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = 'https://www.galerieslafayette.com/' +  item.findChildren('a', {'class': 'js-pdt-link'})[0]['href']
             brand = item.findChildren('strong', {'class': 'pdt-brand bold-large-title-marque one'})[0].text
             name = item.findChildren('span', {'class': 'pdt-name three'})[0].text
             item_name = brand + ' ' + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -602,9 +562,6 @@ async def hubbastille_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product-name'})[0]['href']
             item_price = item.findChildren('span', {'class': 'price product-price'})[0].text
@@ -614,10 +571,7 @@ async def hubbastille_com(bot, search_requests):
             item_name = item_name.replace('\t', '')
             item_name = item_name.replace('\n', '')
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -654,19 +608,13 @@ async def impact_premium_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product_img_link'})[0]['href']
             item_price = item.findChildren('span', {'class': 'price product-price'})[0].text
             item_name = item.findChildren('a', {'class': 'product-name'})[0].text
             item_name = item_name.replace(':', '')
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -703,22 +651,20 @@ async def lerayonfrais_fr(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
-            url = item.findChildren('div', {'class': 'thumb_picture intern_pict'})[0]
             url = item.findChildren('a')[0]
             item_url = url['href']
             name = url['title']
             brand = item.findChildren('a', {'class': 'brand'})[0].text
-            item_price = item.findChildren('div', {'class': 'price_no_discount'})[0].text
+
+            try:
+                item_price = item.findChildren('div', {'class': 'price_no_discount'})[0].text
+            except Exception:
+                item_price = 'SOLD OUT'
+
             item_name = brand + ' ' + name
 
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -755,9 +701,6 @@ async def opiumparis_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'thumbnail product-thumbnail'})[0]['href']
             name = item.findChildren('h1', {'class': 'product-title title-sm mb-xs'})[0].text
@@ -768,10 +711,8 @@ async def opiumparis_com(bot, search_requests):
             item_name = item_name.replace('\n', '')
             sizes = item.findChildren('ul', {'class': 'list-sizes'})[0]
             sizes = sizes.findChildren()
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -797,18 +738,13 @@ async def shinzo_paris(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             url = item.findChildren('a', {'class': 'link-declinaison-product'})[0]
             item_url = url['href']
             item_name = url['title']
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'price product-price'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -840,21 +776,16 @@ async def shoezgallery_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product_img_link'})[0]['href']
             brand = item.findChildren('span', {'itemprop': 'brand'})[0].text
             name = item.findChildren('span', {'itemprop': 'name'})[0].text
             item_name = brand + ' ' + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'price product-price'})[0].text
             size = item.findChildren('span', {'class': 'product-combinations position-absolute text-center py-2 w-100'})[0]
             sizes = size.findChildren()
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -885,19 +816,14 @@ async def snkrs_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product_img_link'})[0]['href']
             brand = item.findChildren('span', {'class': 'manufacturer'})[0].text
             name = item.findChildren('span', {'class': 'product-name'})[0].text
             item_name = brand + ' ' + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'price product-price'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -924,9 +850,6 @@ async def thenextdoor_fr(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = 'https://thenextdoor.fr/' + item.findChildren('a', {'class': 'grid-view-item__link grid-view-item__image-container full-width-link'})[0]['href']
             brand = item.findChildren('div', {'class': 'grid-view-item__vendor'})[0].text
@@ -934,11 +857,9 @@ async def thenextdoor_fr(bot, search_requests):
             item_name = brand + ' ' + name
             item_name = item_name.replace('\n', '')
             item_name = item_name.replace('\t', '')
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
             item_price = item.findChildren('span', {'class': 'money'})[0].text
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -965,17 +886,11 @@ async def the_broken_arm_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('a', {'class': 'product_img_link'})[0]['href']
             item_name = item.findChildren('a', {'class': 'product-name'})[0]['title']
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1004,20 +919,14 @@ async def zalando_fr(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = 'https://www.zalando.fr/' + item.findChildren('a', {'class': 'cat_imageLink-OPGGa'})[0]['href']
             item_price = item.findChildren('div', {'class': 'cat_originalPrice-2Oy4G'})[0].text
             brand = item.findChildren('div', {'class': 'cat_brandName-2XZRz cat_ellipsis-MujnT'})[0].text
             name = item.findChildren('div', {'class': 'cat_articleName--arFp cat_ellipsis-MujnT'})[0].text
             item_name = brand + ' ' + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1039,9 +948,6 @@ async def einhalb_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = 'https://www.43einhalb.com/' + item.findChildren('a', {'class': 'plink image'})[0]['href']
             item_price = item.findChildren('span', {'class': 'pPrice'})[0].text
@@ -1051,13 +957,10 @@ async def einhalb_com(bot, search_requests):
             brand = item.findChildren('span', {'class': 'producerName'})[0].text
             name = item.findChildren('span', {'class': 'productName'})[0].text
             item_name = brand + ' ' + name
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
             sizes = bs.find_all('ul', {'class': 'availableVariants'})[0]
             sizes = sizes.findChildren('a')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1087,9 +990,6 @@ async def asphaltgold_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = 'https://www.asphaltgold.com/' + item['href']
             brand = item.findChildren('div', {'class': 'product-brand ng-star-inserted'})[0].text
@@ -1097,11 +997,8 @@ async def asphaltgold_com(bot, search_requests):
             item_name = brand + ' ' + name
             item_price = item.findChildren('div', {'class': 'price'})[0].text
             item_price = item_price.replace(' ', '')
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1123,23 +1020,17 @@ async def allikestore_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             url = item.findChildren('a', {'class': 'product-image'})[0]
             item_url = url['href']
             item_name = url['title']
             item_price = item.findChildren('span', {'class': 'regular-price'})[0].text
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
             sizes = item.findChildren('div', {'class': 'available-sizes'})[0].text
 
             if 'Sizes Available' not in sizes:
                 sizes = ''
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1171,22 +1062,16 @@ async def kickz_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('button', {'class': 'btn ref_link'})[0]['href']
             brand = item.findChildren('span', {'class': 'categoryElementHeadlineContent'})[0].text
             name = item.findChildren('div', {'class': 'catalogItemName'})[0].text
             item_name = brand + ' ' + name
             item_price = item.findChildren('span', {'class': 'price'})[0].text
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
             sizes = item.findChildren('ul', {'class': 'list-group'})[0]
             sizes = sizes.findChildren()
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1209,22 +1094,16 @@ async def kickzpremium_com(bot, search_requests):
     print(len(items))
 
     for sr in search_requests:
-        request_lower_case = sr.request.lower()
-        request_lower_case = request_lower_case.replace(' ', '')
-
         for item in items:
             item_url = item.findChildren('button', {'class': 'btn ref_link'})[0]['href']
             brand = item.findChildren('span', {'class': 'categoryElementHeadlineContent'})[0].text
             name = item.findChildren('div', {'class': 'catalogItemName'})[0].text
             item_name = brand + ' ' + name
             item_price = item.findChildren('span', {'class': 'price'})[0].text
-            item_lower_case = item_name.lower()
-            item_lower_case = item_lower_case.replace(' ', '')
-            item_lower_case = item_lower_case.replace('-', '')
             sizes = item.findChildren('ul', {'class': 'list-group'})[0]
             sizes = sizes.findChildren()
 
-            if request_lower_case not in item_lower_case:
+            if not compare(sr.request, item_name):
                 continue
 
             if await ItemsShowedDbManager.exist(item_url, loop):
@@ -1238,7 +1117,166 @@ async def kickzpremium_com(bot, search_requests):
             await bot.get_channel(channel_id).send(text)
             print(item_url)
 
+
+#  FAIL
+async def overkillshop_com(bot, search_requests):
+    html = await get_html('https://www.overkillshop.com/en/sneaker/men.html')
+    print(html)
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'thumbnail'})
+    print(len(items))
+
+
+async def rimowa_com(bot, search_requests):
+    html = await get_html('https://www.rimowa.com/de/en/new-colors/')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'grid-tile'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_url = item.findChildren('a', {'class': 'product-link js-product-tile-link'})[0]['href']
+            item_name = item.findChildren('div', {'class': 'product-name'})[0].text
+            item_name = item_name.replace('\n', '')
+            item_price = item.findChildren('div', {'class': 'product-pricing'})[0].text
+            item_price = item_price.replace('\n', '')
+
+            if not compare(sr.request, item_name):
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+#  FAIL
+async def solebox_com(bot, search_requests):
+    html = await get_html('https://www.solebox.com/Footwear/?filter=f99:oNew')
+    print(html)
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'productData'})
+    print(len(items))
+
+
+#  FAIL
+async def sotostore_com(bot, search_requests):
+    html = await get_html('https://www.sotostore.com/en/2/latest-products?p=337&orderBy=Published')
+    print(html)
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'card'})
+    print(len(items))
+
+
+async def suppastore_com(bot, search_requests):
+    html = await get_html('https://www.suppastore.com/en/latest')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-item-info'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_url = item.findChildren('a', {'class': 'product photo product-item-photo'})[0]['href']
+            brand = item.findChildren('div', {'class': 'manufacturer'})[0].text
+            name = item.findChildren('a', {'class': 'product-item-link'})[0].text
+            item_name = brand + ' ' + name
+            item_name = item_name.replace('\n', '')
+            item_price = item.findChildren('span', {'class': 'price-wrapper'})[0]['data-price-amount'] + ' €'
+
+            if not compare(sr.request, item_name):
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def vooberlin_com(bot, search_requests):
+    html = await get_html('https://www.vooberlin.com/sneakers/new-releases/')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product--box box--minimal'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('a', {'class': 'product--title'})[0]
+            item_url = url['href']
+            brand = item.findChildren('span', {'class': 'w_suppliername'})[0].text
+            name = url['title']
+            item_name = brand + ' ' + name
+            item_name = item_name.replace('\n', '')
+
+            try:
+                item_price = item.findChildren('div', {'class': 'product--price'})[0].text
+                item_price = item_price.replace('\n', '')
+            except Exception:
+                item_price = ''
+
+            if not compare(sr.request, item_name):
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def zupport_de(bot, search_requests):
+    html = await get_html('https://zupport.de/skateshoes?p=1')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product--info'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('a', {'class': 'product--image'})[0]
+            item_url = url['href']
+            item_name = url['title']
+            item_price = item.findChildren('div', {'class': 'product--price'})[0].text
+            item_price = item_price.replace('\n', '')
+            item_price = item_price.replace(' ', '')
+            item_price = item_price.replace('*', '')
+
+            if not compare(sr.request, item_name):
+                continue
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            sizes = bs.find_all('label', {'class': 'option--label'})
+
+            text = tp.the_broken_arm_com_tex(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
     search_requests = [SearchRequest(1, 'stan smith', 640641207491493888)]
-    loop.run_until_complete(kickzpremium_com(123, search_requests))
+    loop.run_until_complete(zupport_de(123, search_requests))

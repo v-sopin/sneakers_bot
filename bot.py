@@ -46,7 +46,6 @@ async def add_search_request(ctx, request=None):
 @commands.has_role('admin')
 async def show_requests(ctx, request=None):
     channel = ctx.message.channel
-
     requests = await SearchRequestsDbManager.get_all(loop)
     if len(requests) == 0:
         text = 'Список запросов пуст.'
@@ -73,6 +72,11 @@ async def delete(ctx, request_id=None):
         return
 
     request = await SearchRequestsDbManager.get_by_id(request_id, loop)
+
+    if request is None:
+        await channel.send(f'''Запроса с номером **{request_id}** не существует''')
+        return
+
     await SearchRequestsDbManager.delete(request_id, loop)
     await channel.send(f'''Запрос **{request.request}** удален''')
 
