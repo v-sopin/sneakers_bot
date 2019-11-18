@@ -6,80 +6,218 @@ from bs4 import BeautifulSoup
 from scripts.db_manager import SearchRequestsDbManager, ItemsShowedDbManager
 from scripts.models import SearchRequest
 import scripts.text_parsers as tp
+from scripts.config import DEVELOPER_ID
 
 loop = asyncio.get_event_loop()
 
 
 async def parse(bot):
     await bot.wait_until_ready()
+    user = bot.get_user(DEVELOPER_ID)
+    if user.dm_channel is None:
+        await user.create_dm()
 
     while True:
         search_requests = await SearchRequestsDbManager.get_all(loop)
-        '''
+
         cur = time.time()
         
         #  0
-        
-        await hypedc_com(bot, search_requests)
-        await subtypestore_com(bot, search_requests)
-        await lockwood_avenue_com(bot, search_requests)
-        await footshop_eu(bot, search_requests)
-        await footshop_com(bot, search_requests)
-        await rezetstore_dk(bot, search_requests)
-        await stormfashion_dk(bot, search_requests)
-        await stoy_com(bot, search_requests)
-        await dev_thegoodlifespace_com(bot, search_requests)
-        await basket4ballers_com(bot, search_requests)
-        
+
+        try:
+            await hypedc_com(bot, search_requests)
+        except Exception:
+            print('Exception: hypedc_com')
+            await user.send('Exception: hypedc_com')
+        try:
+            await subtypestore_com(bot, search_requests)
+            raise Exception
+        except Exception:
+            print('Exception: subtypestore_com')
+            await user.send('Exception: subtypestore_com')
+        try:
+            await lockwood_avenue_com(bot, search_requests)
+        except Exception:
+            print('Exception: lockwood_avenue_com')
+            await user.send('Exception: lockwood_avenue_com')
+        try:
+            await footshop_eu(bot, search_requests)
+        except Exception:
+            print('Exception: footshop_eu')
+            await user.send('Exception: footshop_eu')
+        try:
+            await footshop_com(bot, search_requests)
+        except Exception:
+            print('Exception: footshop_com')
+            await user.send('Exception: footshop_com')
+        try:
+            await rezetstore_dk(bot, search_requests)
+        except Exception:
+            print('Exception: rezetstore_dk')
+            await user.send('Exception: rezetstore_dk')
+        try:
+            await stormfashion_dk(bot, search_requests)
+        except Exception:
+            print('Exception: stormfashion_dk')
+            await user.send('Exception: stormfashion_dk')
+        try:
+            await stoy_com(bot, search_requests)
+        except Exception:
+            print('Exception: stoy_com')
+            await user.send('Exception: stoy_com')
+        try:
+            await dev_thegoodlifespace_com(bot, search_requests)
+        except Exception:
+            print('Exception: dev_thegoodlifespace_com')
+            await user.send('Exception: dev_thegoodlifespace_com')
+        try:
+            await basket4ballers_com(bot, search_requests)
+        except Exception:
+            print('Exception: basket4ballers_com')
+            await user.send('Exception: basket4ballers_com')
+
         #  10
-        
-        await bouncewear_com(bot, search_requests)
-        await chezvibe_com(bot, search_requests)
-        await galerieslafayette_com(bot, search_requests)
-        await hubbastille_com(bot, search_requests)
-        await impact_premium_com(bot, search_requests)
-        await lerayonfrais_fr(bot, search_requests)
-        await opiumparis_com(bot, search_requests)
+
+        try:
+            await bouncewear_com(bot, search_requests)
+        except Exception:
+            print('Exception: bouncewear_com')
+            await user.send('Exception: bouncewear_com')
+        try:
+            await chezvibe_com(bot, search_requests)
+        except Exception:
+            print('Exception: chezvibe_com')
+            await user.send('Exception: chezvibe_com')
+        try:
+            await galerieslafayette_com(bot, search_requests)
+        except Exception:
+            print('Exception: galerieslafayette_com')
+            await user.send('Exception: galerieslafayette_com')
+        try:
+            await hubbastille_com(bot, search_requests)
+        except Exception:
+            print('Exception: hubbastille_com')
+            await user.send('Exception: hubbastille_com')
+        try:
+            await impact_premium_com(bot, search_requests)
+        except Exception:
+            print('Exception: impact_premium_com')
+            await user.send('Exception: impact_premium_com')
+        try:
+            await lerayonfrais_fr(bot, search_requests)
+        except Exception:
+            print('Exception: lerayonfrais_fr')
+            await user.send('Exception: lerayonfrais_fr')
+        try:
+            await opiumparis_com(bot, search_requests)
+        except Exception:
+            print('Exception: opiumparis_com')
+            await user.send('Exception: opiumparis_com')
         #  http://oquimstore.com/
-        await shinzo_paris(bot, search_requests)
+        try:
+            await shinzo_paris(bot, search_requests)
+        except Exception:
+            print('Exception: shinzo_paris')
+            await user.send('Exception: shinzo_paris')
         
         #  20
-        
-        await shoezgallery_com(bot, search_requests)
-        await snkrs_com(bot, search_requests)
-        await thenextdoor_fr(bot, search_requests)
-        await the_broken_arm_com(bot, search_requests)
-
+        try:
+            await shoezgallery_com(bot, search_requests)
+        except Exception:
+            print('Exception: shoezgallery_com')
+            await user.send('Exception: shoezgallery_com')
+        try:
+            await snkrs_com(bot, search_requests)
+        except Exception:
+            print('Exception: snkrs_com')
+            await user.send('Exception: snkrs_com')
+        try:
+            await thenextdoor_fr(bot, search_requests)
+        except Exception:
+            print('Exception: thenextdoor_fr')
+            await user.send('Exception: thenextdoor_fr')
+        try:
+            await the_broken_arm_com(bot, search_requests)
+        except Exception:
+            print('Exception: the_broken_arm_com')
+            await user.send('Exception: the_broken_arm_com')
         try:
             await zalando_fr(bot, search_requests)
         except Exception:
             print('Exception: zalando_fr')
-        await einhalb_com(bot, search_requests)
-        await asphaltgold_com(bot, search_requests)
-        await allikestore_com(bot, search_requests)
-        await kickz_com(bot, search_requests)
-        await kickzpremium_com(bot, search_requests)
+            await user.send('Exception: zalando_fr')
+        try:
+            await einhalb_com(bot, search_requests)
+        except Exception:
+            print('Exception: einhalb_com')
+            await user.send('Exception: einhalb_com')
+        try:
+            await asphaltgold_com(bot, search_requests)
+        except Exception:
+            print('Exception: asphaltgold_com')
+            await user.send('Exception: asphaltgold_com')
+        try:
+            await allikestore_com(bot, search_requests)
+        except Exception:
+            print('Exception: allikestore_com')
+            await user.send('Exception: allikestore_com')
+        try:
+            await kickz_com(bot, search_requests)
+        except Exception:
+            print('Exception: kickz_com')
+            await user.send('Exception: kickz_com')
+        try:
+            await kickzpremium_com(bot, search_requests)
+        except Exception:
+            print('Exception: kickzpremium_com')
+            await user.send('Exception: kickzpremium_com')
         
         #  30
-        
-        await rimowa_com(bot, search_requests)
+
+        try:
+            await rimowa_com(bot, search_requests)
+        except Exception:
+            print('Exception: rimowa_com')
+            await user.send('Exception: rimowa_com')
         # http://thegoodwillout.com/
-        await suppastore_com(bot, search_requests)
-        await vooberlin_com(bot, search_requests)
+        try:
+            await suppastore_com(bot, search_requests)
+        except Exception:
+            print('Exception: suppastore_com')
+            await user.send('Exception: suppastore_com')
+        try:
+            await vooberlin_com(bot, search_requests)
+        except Exception:
+            print('Exception: vooberlin_com')
+            await user.send('Exception: vooberlin_com')
         try:
             await zupport_de(bot, search_requests)
         except Exception:
             print('Exception: zupport_de')
-        await aw_lab_com(bot, search_requests)
-        await back_door_it(bot, search_requests)
-        await blackboxstore_com(bot, search_requests)
+            await user.send('Exception: zupport_de')
+        try:
+            await aw_lab_com(bot, search_requests)
+        except Exception:
+            print('Exception: aw_lab_com')
+            await user.send('Exception: aw_lab_com')
+        try:
+            await back_door_it(bot, search_requests)
+        except Exception:
+            print('Exception: back_door_it')
+            await user.send('Exception: back_door_it')
+        try:
+            await blackboxstore_com(bot, search_requests)
+        except Exception:
+            print('Exception: blackboxstore_com')
+            await user.send('Exception: blackboxstore_com')
         # https://www.excelsiormilano.com/
-        await footdistrict_com(bot, search_requests)
-        '''
+        try:
+            await footdistrict_com(bot, search_requests)
+        except Exception:
+            print('Exception: footdistrict_com')
+            await user.send('Exception: footdistrict_com')
 
-        await footdistrict_com(bot, search_requests)
-
-        # print('Result: ', time.time() - cur)
+        print('Result: ', time.time() - cur)
 
 
 def compare(request, search_result):
