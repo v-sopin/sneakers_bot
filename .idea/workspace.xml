@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d084ff6f-959f-4aa8-b143-11a43930a188" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/parsers.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/parsers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/text_parsers.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/text_parsers.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,8 +16,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="347">
-              <caret line="41" column="25" selection-start-line="41" selection-start-column="25" selection-end-line="41" selection-end-column="25" />
+            <state relative-caret-position="279">
+              <caret line="37" lean-forward="true" selection-start-line="37" selection-end-line="37" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -30,8 +28,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scripts/parsers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="2179" column="12" selection-start-line="2179" selection-start-column="12" selection-end-line="2179" selection-end-column="12" />
+            <state relative-caret-position="306">
+              <caret line="326" column="44" selection-start-line="326" selection-start-column="44" selection-end-line="326" selection-end-column="44" />
               <folding>
                 <element signature="e#8668#9046#0" />
                 <element signature="e#8974#9027#0" />
@@ -181,11 +179,21 @@
                 <element signature="e#66258#67600#0" />
                 <element signature="e#68920#70223#0" />
                 <element signature="e#70286#71756#0" />
-                <element signature="e#71812#73379#0" />
+                <element signature="e#73582#75149#0" />
                 <element signature="e#73434#74724#0" />
                 <element signature="e#74773#76148#0" />
-                <element signature="e#76996#78309#0" />
+                <element signature="e#77400#78713#0" />
+                <element signature="e#78577#79779#0" />
                 <element signature="e#79624#80753#0" />
+                <element signature="e#81020#82225#0" />
+                <element signature="e#82281#82523#0" />
+                <element signature="e#82537#82735#0" />
+                <element signature="e#82843#83039#0" />
+                <element signature="e#83095#83291#0" />
+                <element signature="e#83733#84760#0" />
+                <element signature="e#84815#86038#0" />
+                <element signature="e#86480#87972#0" />
+                <element signature="e#88026#88935#0" />
               </folding>
             </state>
           </provider>
@@ -194,8 +202,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts/text_parsers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="167">
-              <caret line="280" column="26" selection-start-line="280" selection-start-column="4" selection-end-line="280" selection-end-column="26" />
+            <state relative-caret-position="66">
+              <caret line="63" column="28" selection-start-line="63" selection-start-column="4" selection-end-line="63" selection-end-column="28" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/config.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="68" selection-start-column="68" selection-end-column="68" />
             </state>
           </provider>
         </entry>
@@ -231,14 +248,14 @@
         <option value="$PROJECT_DIR$/scripts/laba.py" />
         <option value="$PROJECT_DIR$/scripts/responce.html" />
         <option value="$PROJECT_DIR$/bot.py" />
-        <option value="$PROJECT_DIR$/scripts/config.py" />
         <option value="$PROJECT_DIR$/responce.html" />
         <option value="$PROJECT_DIR$/scripts/text_parsers.py" />
+        <option value="$PROJECT_DIR$/scripts/config.py" />
         <option value="$PROJECT_DIR$/scripts/parsers.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="x" value="-7" />
     <option name="width" value="974" />
     <option name="height" value="1047" />
@@ -382,8 +399,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.bot" />
         <item itemvalue="Python.parsers" />
+        <item itemvalue="Python.bot" />
         <item itemvalue="Python.laba" />
         <item itemvalue="Python.test" />
       </list>
@@ -406,12 +423,12 @@
     <frame x="-7" y="0" width="974" height="1047" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.174" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17307693" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.24973656" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.30809128" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.37448132" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39937758" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -430,7 +447,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.50103736" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.30809128" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39937758" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -641,8 +658,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="347">
-          <caret line="41" column="25" selection-start-line="41" selection-start-column="25" selection-end-line="41" selection-end-column="25" />
+        <state relative-caret-position="279">
+          <caret line="37" lean-forward="true" selection-start-line="37" selection-end-line="37" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -651,15 +668,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/text_parsers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="167">
-          <caret line="280" column="26" selection-start-line="280" selection-start-column="4" selection-end-line="280" selection-end-column="26" />
+        <state relative-caret-position="66">
+          <caret line="63" column="28" selection-start-line="63" selection-start-column="4" selection-end-line="63" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/parsers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="2179" column="12" selection-start-line="2179" selection-start-column="12" selection-end-line="2179" selection-end-column="12" />
+        <state relative-caret-position="306">
+          <caret line="326" column="44" selection-start-line="326" selection-start-column="44" selection-end-line="326" selection-end-column="44" />
           <folding>
             <element signature="e#8668#9046#0" />
             <element signature="e#8974#9027#0" />
@@ -809,11 +826,21 @@
             <element signature="e#66258#67600#0" />
             <element signature="e#68920#70223#0" />
             <element signature="e#70286#71756#0" />
-            <element signature="e#71812#73379#0" />
+            <element signature="e#73582#75149#0" />
             <element signature="e#73434#74724#0" />
             <element signature="e#74773#76148#0" />
-            <element signature="e#76996#78309#0" />
+            <element signature="e#77400#78713#0" />
+            <element signature="e#78577#79779#0" />
             <element signature="e#79624#80753#0" />
+            <element signature="e#81020#82225#0" />
+            <element signature="e#82281#82523#0" />
+            <element signature="e#82537#82735#0" />
+            <element signature="e#82843#83039#0" />
+            <element signature="e#83095#83291#0" />
+            <element signature="e#83733#84760#0" />
+            <element signature="e#84815#86038#0" />
+            <element signature="e#86480#87972#0" />
+            <element signature="e#88026#88935#0" />
           </folding>
         </state>
       </provider>

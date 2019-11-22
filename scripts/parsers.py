@@ -19,7 +19,7 @@ async def parse(bot):
 
     while True:
         search_requests = await SearchRequestsDbManager.get_all(loop)
-        '''
+
         cur = time.time()
         
         #  0
@@ -224,7 +224,6 @@ async def parse(bot):
         except Exception:
             print('Exception: it_oneblockdown_it')
             await user.send('Exception: it_oneblockdown_it')
-        print('Result: ', time.time() - cur)
         try:
             await sivasdescalzo_com(bot, search_requests)
         except Exception:
@@ -298,13 +297,34 @@ async def parse(bot):
         except Exception:
             print('Exception: hannibalstore_it')
             await user.send('Exception: hannibalstore_it')
-        '''
         try:
-            await hannibalstore_it(bot, search_requests)
+            await brandshop_ru(bot, search_requests)
         except Exception:
-            print('Exception: hannibalstore_it')
-            await user.send('Exception: hannibalstore_it')
+            print('Exception: brandshop_ru')
+            await user.send('Exception: brandshop_ru')
+        try:
+            await sneakerhead_ru(bot, search_requests)
+        except Exception:
+            print('Exception: sneakerhead_ru')
+            await user.send('Exception: sneakerhead_ru')
+        try:
+            await slamjam_com(bot, search_requests)
+        except Exception:
+            print('Exception: slamjam_com')
+            await user.send('Exception: slamjam_com')
+        try:
+            await tres_bien_com(bot, search_requests)
+        except Exception:
+            print('Exception: tres_bien_com')
+            await user.send('Exception: tres_bien_com')
+        try:
+            await urbanjunglestore_com(bot, search_requests)
+        except Exception:
+            print('Exception: urbanjunglestore_com')
+            await user.send('Exception: urbanjunglestore_com')
 
+        #  60
+        print('Result: ', time.time() - cur)
 
 
 def compare(request, search_result):
@@ -2192,7 +2212,207 @@ async def hannibalstore_it(bot, search_requests):
             print(item_url)
 
 
+#  FAIL
+async def yeezysupply_com(bot, search_requests):
+    html = await get_html('https://www.yeezysupply.com/products')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'col-l-6 col-s-6 plp-item___17OBr'})
+    print(len(items))
+
+
+#  FAIL
+async def adidas_ru(bot, search_requests):
+    html = await get_html('https://www.adidas.ru/muzhchiny-obuv-novinki?sort=newest-to-oldest')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'col-s-6 col-m-4 col-l-6 no-gutters plp-column___3gy6t'})
+    print(len(items))
+
+
+#  FAIL
+async def nike_com(bot, search_requests):
+    html = await get_html('https://www.nike.com/w/new-3n82y')
+    print(html)
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-card__info'})
+    print(len(items))
+
+
+#  FAIL
+async def km20_ru(bot, search_requests):
+    html = await get_html('https://www.km20.ru/catalog/men/footwear/sneakers/')
+    print(html)
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('a', {'class': 'cat_item'})
+    print(len(items))
+
+
+async def brandshop_ru(bot, search_requests):
+    html = await get_html('https://brandshop.ru/new/')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('a', {'class': 'product-image'})[0]
+
+            try:
+                item_name = url['title']
+            except KeyError:
+                continue
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = url['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('div', {'class': 'price price-box'})[0].text + ' ₽'
+            item_price = item_price.replace('р', '')
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def sneakerhead_ru(bot, search_requests):
+    html = await get_html('https://sneakerhead.ru/isnew/shoes/sneakers/')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-card'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('meta', {'itemprop': 'manufacturer'})[0]['content']
+            name = item.findChildren('meta', {'itemprop': 'name'})[0]['content']
+            item_name = brand + ' ' + name
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://sneakerhead.ru' +  item.findChildren('a', {'class': 'product-card__link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = bs.find_all('span', {'class': 'product-card__price-value'})[0].text + ' ₽'
+            item_price = item_price.replace(' ', '')
+            item_price = item_price.replace('\n', '')
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def slamjam_com(bot, search_requests):
+    html = await get_html('https://www.slamjam.com/en_IT/man/footwear/sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'itemprop': 'itemListElement'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('h2', {'class': 't-up'})[0].text
+            name = item.findChildren('span', {'itemprop': 'name'})[0].text
+            item_name = brand + ' ' + name
+            item_name = item_name.replace('\n', '')
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.slamjam.com' + item.findChildren('a', {'class': 'link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('select', {'id': 'select-prenotation'})[0]
+                sizes = sizes.findChildren('option')
+                sizes = sizes[1:]
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'value'})[0]['content'] + ' €'
+            text = tp.sivasdescalzo_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def tres_bien_com(bot, search_requests):
+    html = await get_html('https://tres-bien.com/new-items?cat=10')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('article', {'class': 'product-item-info'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('a', {'class': 'product-item-link'})[0]
+            item_name = url.text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = url['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('span', {'class': 'price'})[0].text
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def urbanjunglestore_com(bot, search_requests):
+    html = await get_html('https://www.urbanjunglestore.com/en/men/footwear/sneakers.html')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'item'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('h2', {'class': 'product-name'})[0]
+            url = url.findChildren('a')[0]
+            item_name = url['title']
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = url['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('span', {'class': 'price'})[0].text
+            text = tp.common_text(item_url, item_name, item_price)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
     search_requests = [SearchRequest(1, 'stan smith', 640641207491493888)]
-    loop.run_until_complete(hannibalstore_it(123, search_requests))
+    loop.run_until_complete(urbanjunglestore_com(123, search_requests))
