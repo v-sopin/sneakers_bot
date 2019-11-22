@@ -276,3 +276,149 @@ def footdistrict_com_text(url, item_name, sizes, price):
     text += sizes_text
 
     return text
+
+
+def sivasdescalzo_com_text(url, item_name, sizes, price):
+    sizes_text = '''**Размеры**
+**EU:** '''
+    for size in sizes:
+        sizes_text += f'''{size.text}/'''
+    sizes_text = sizes_text[:-1]
+    if sizes == []:
+        sizes_text = ''
+
+    text = f'''**{item_name}**
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+    return text
+
+
+def aimeleondore_com_text(text, url):
+    t = f'''{text}
+
+**Ссылка на товар: ** {url}'''
+    return t
+
+
+def lustmexico_com_text(url, item_name, sizes, price):
+    sizes_text = '''**Размеры**
+**US:** '''
+    for size in sizes:
+        sizes_text += f'''{size.text}/'''
+    sizes_text = sizes_text[:-1]
+    if sizes == []:
+        sizes_text = ''
+
+    text = f'''**{item_name}**
+**Цена:** {price} MEX $
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+    return text
+
+
+def onenessboutique_com_text(url, item_name, sizes, price):
+    sizes_text = '''**Размеры**
+**US:** '''
+    for size in sizes:
+        txt = size.text
+        txt = txt.replace('\n', '')
+        txt = txt.replace(' ', '')
+        sizes_text += f'''{txt}/'''
+    sizes_text = sizes_text[:-1]
+    if sizes == []:
+        sizes_text = ''
+
+    text = f'''**{item_name}**
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+    return text
+
+
+def undefeated_com_text(url, item_name, sizes, price):
+    sizes_text = '''**Размеры**
+**US:** '''
+    for size in sizes:
+        txt = size.text
+        txt = txt.replace('\n', '')
+        if 'Sold Out' not in txt:
+            txt = txt.replace(' ', '')
+            sizes_text += f'''{txt}/'''
+    sizes_text = sizes_text[:-1]
+    if sizes == []:
+        sizes_text = ''
+
+    text = f'''**{item_name}**
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+    return text
+
+
+def kith_com_text(url, item_name, sizes, price):
+    sizes_text = ''
+    if sizes is not []:
+        sizes_text = '''**Размеры**'''
+        for size in sizes[1:]:
+            sizes_text += f'''{size.text}'''
+    text = f'''**{item_name}**
+
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+
+    return text
+
+
+def deadstock_ca_text(url, item_name, sizes, price):
+    sizes_text = '''**Размеры**
+**US:** '''
+    for size in sizes:
+        sizes_text += f'''{size['value']}/'''
+    sizes_text = sizes_text[:-1]
+    if sizes == []:
+        sizes_text = ''
+
+    text = f'''**{item_name}**
+**Цена:** {price} MEX $
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+    return text
+
+
+def hanon_shop_com_text(url, item_name, sizes, price):
+    sizes_text = '''**Размеры**
+'''
+    for size in sizes:
+        sizes_text += f'''\n{size['value']}'''
+
+    if sizes == []:
+        sizes_text = ''
+
+    text = f'''**{item_name}**
+**Цена:** {price} MEX $
+
+**Ссылка на товар:** {url}
+
+'''
+    text += sizes_text
+    return text

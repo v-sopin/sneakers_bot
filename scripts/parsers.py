@@ -19,7 +19,7 @@ async def parse(bot):
 
     while True:
         search_requests = await SearchRequestsDbManager.get_all(loop)
-
+        '''
         cur = time.time()
         
         #  0
@@ -216,8 +216,95 @@ async def parse(bot):
         except Exception:
             print('Exception: footdistrict_com')
             await user.send('Exception: footdistrict_com')
-
+            
+        #  40
+        
+        try:
+            await it_oneblockdown_it(bot, search_requests)
+        except Exception:
+            print('Exception: it_oneblockdown_it')
+            await user.send('Exception: it_oneblockdown_it')
         print('Result: ', time.time() - cur)
+        try:
+            await sivasdescalzo_com(bot, search_requests)
+        except Exception:
+            print('Exception: sivasdescalzo_com')
+            await user.send('Exception: sivasdescalzo_com')
+        try:
+            await sivasdescalzo_com(bot, search_requests)
+        except Exception:
+            print('Exception: shop_havenshop_com')
+            await user.send('Exception: shop_havenshop_com')
+        try:
+            await aimeleondore_com(bot, search_requests)
+        except Exception:
+            print('Exception: aimeleondore_com')
+            await user.send('Exception: aimeleondore_com')
+        try:
+            await lustmexico_com(bot, search_requests)
+        except Exception:
+            print('Exception: lustmexico_com')
+            await user.send('Exception: lustmexico_com')
+        try:
+            await onenessboutique_com(bot, search_requests)
+        except Exception:
+            print('Exception: onenessboutique_com')
+            await user.send('Exception: onenessboutique_com')
+        try:
+            await onenessboutique_com(bot, search_requests)
+        except Exception:
+            print('Exception: onenessboutique_com')
+            await user.send('Exception: onenessboutique_com')
+        try:
+            await shop_exclucitylife_com(bot, search_requests)
+        except Exception:
+            print('Exception: shop_exclucitylife_com')
+            await user.send('Exception: shop_exclucitylife_com')
+        try:
+            await saintalfred_com(bot, search_requests)
+        except Exception:
+            print('Exception: saintalfred_com')
+            await user.send('Exception: saintalfred_com')
+        try:
+            await undefeated_com(bot, search_requests)
+        except Exception:
+            print('Exception: undefeated_com')
+            await user.send('Exception: undefeated_com')
+        
+        #  50
+        
+        try:
+            await kith_com(bot, search_requests)
+        except Exception:
+            print('Exception: kith_com')
+            await user.send('Exception: kith_com')
+        try:
+            await deadstock_ca(bot, search_requests)
+        except Exception:
+            print('Exception: deadstock_ca')
+            await user.send('Exception: deadstock_ca')
+        try:
+            await bluetilelounge_ca(bot, search_requests)
+        except Exception:
+            print('Exception: bluetilelounge_ca')
+            await user.send('Exception: bluetilelounge_ca')
+        try:
+            await hanon_shop_com(bot, search_requests)
+        except Exception:
+            print('Exception: hanon_shop_com')
+            await user.send('Exception: hanon_shop_com')
+        try:
+            await hannibalstore_it(bot, search_requests)
+        except Exception:
+            print('Exception: hannibalstore_it')
+            await user.send('Exception: hannibalstore_it')
+        '''
+        try:
+            await hannibalstore_it(bot, search_requests)
+        except Exception:
+            print('Exception: hannibalstore_it')
+            await user.send('Exception: hannibalstore_it')
+
 
 
 def compare(request, search_result):
@@ -1087,7 +1174,7 @@ async def zalando_fr(bot, search_requests):
 
 
 async def einhalb_com(bot, search_requests):
-    html = await get_html('https://www.43einhalb.com/en/sneaker')
+    html = await get_html('https://www.43einhalb.com/en/sneaker/page/1/sort/date_new/perpage/36')
     bs = BeautifulSoup(html, 'lxml')
     items = bs.find_all('div', {'class': 'itemWrapper pOverlay'})
     print(len(items))
@@ -1561,7 +1648,551 @@ async def footdistrict_com(bot, search_requests):
             print(item_url)
 
 
+#  FAIL
+async def luisaviaroma_com(bot, search_requests):
+    html = await get_html('https://www.luisaviaroma.com/ru-ua/shop/%D0%BC%D1%83%D0%B6%D1%87%D0%B8%D0%BD%D1%8B/%D0%BD%D0%BE%D0%B2%D1%8B%D0%B5-%D0%BF%D0%BE%D1%81%D1%82%D1%83%D0%BF%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F?lvrid=_gm_n&FilterSublines=4')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'item__info___3z_8x7P_Pw'})
+    print(len(items))
+
+
+async def it_oneblockdown_it(bot, search_requests):
+    html = await get_html('https://row.oneblockdown.it/collections/latest')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-card'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('a', {'class': 'vendor'})[0].text
+            name = item.findChildren('h3')[0].text
+            item_name = brand + ' ' + name
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://row.oneblockdown.it/' + item.findChildren('a', {'class': 'vendor'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            price = item.find_all('span', {'class': 'price'})[0].text
+
+            text = tp.common_text(item_url, item_name, price)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def sivasdescalzo_com(bot, search_requests):
+    html = await get_html('https://www.sivasdescalzo.com/en/lifestyle/sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('span', {'class': 'brand'})[0].text
+            name = item.findChildren('span', {'class': 'model'})[0].text
+            item_name = brand + ' ' + name
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = item.findChildren('a', recursive=False)[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('ul', {'class': 'sizes small-block-grid-4'})[0]
+                sizes = sizes.find_all('a', {'class': 'size-button available'})
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'product-price'})[0].text
+
+            text = tp.sivasdescalzo_com_text(item_url, item_name, sizes, item_price)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+#  FAIL
+async def off_white_com(bot, search_requests):
+    html = await get_html('https://www.off---white.com/en/NZ/section/new-arrivals')
+    bs = BeautifulSoup(html, 'lxml')
+    print(html)
+    items = bs.find_all('article', {'class': 'product'})
+    print(len(items))
+
+
+async def shop_havenshop_com(bot, search_requests):
+    html = await get_html('https://www.sivasdescalzo.com/en/lifestyle/sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('span', {'class': 'brand'})[0].text
+            name = item.findChildren('span', {'class': 'model'})[0].text
+            item_name = brand + ' ' + name
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = item.findChildren('a', recursive=False)[0]['href']
+            print(item_name, item_url)
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('ul', {'class': 'sizes small-block-grid-4'})[0]
+                sizes = sizes.find_all('a', {'class': 'size-button available'})
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'product-price'})[0].text
+
+            text = tp.sivasdescalzo_com_text(item_url, item_name, sizes, item_price)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+#  FAIL
+async def dope_factory_com(bot, search_requests):
+    html = await get_html('https://www.dope-factory.com/collections/footwear/M')
+    bs = BeautifulSoup(html, 'lxml')
+    print(html)
+    items = bs.find_all('div', {'class': 'product-grid-item'})
+    print(len(items))
+
+
+#  FAIL
+async def suede_store_com(bot, search_requests):
+    html = await get_html('https://suede-store.com/collections/footwear-m?sort_by=created-descending')
+    bs = BeautifulSoup(html, 'lxml')
+    print(html)
+    items = bs.find_all('div', {'class': 'tt-product product-parent options-js tt-small'})
+    print(len(items))
+
+
+async def aimeleondore_com(bot, search_requests):
+    html = await get_html('https://www.aimeleondore.com/collections/footwear')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'grid-uniform grid-link__container shop-products'})[0]
+    items = items.findChildren('div', recursive=False)
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items[:-2]:
+            item_name = item.findChildren('div', {'class': 'grid-link__title collectionpage-product-title'})[0].text
+            item_name = item_name.replace('QUICKSHOP', '')
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.aimeleondore.com/' + item.findChildren('a', {'class': 'grid-link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            text = tp.aimeleondore_com_text(item_name, item_url)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def lustmexico_com(bot, search_requests):
+    html = await get_html('https://www.lustmexico.com/collections/calzado-womens?sort_by=created-descending')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'grid-product__content'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('div', {'class': 'grid-product__title'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.lustmexico.com/' + item.findChildren('a', {'class': 'grid-product__link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('fieldset', {'name': 'Size'})[0]
+                sizes = sizes.find_all('label')
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'product__price'})[0]['content']
+
+            text = tp.lustmexico_com_text(item_url, item_name, sizes, item_price)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def onenessboutique_com(bot, search_requests):
+    html = await get_html('https://www.onenessboutique.com/collections/mens-shoes-1')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-wrap'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('span', {'class': 'title'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.onenessboutique.com/' + item.findChildren('a', {'class': 'hidden-product-link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('div', {'class': 'swatch clearfix'})[0]
+                sizes = sizes.find_all('label')
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('p', {'class': 'modal_price'})[0].text
+
+            text = tp.onenessboutique_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def shop_exclucitylife_com(bot, search_requests):
+    html = await get_html('https://shop.exclucitylife.com/collections/new-arrivals-men')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-item product-item--push'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('h4', {'class': 'product-item__vendor text--uppercase'})[0].text
+            name = item.findChildren('a', {'class': 'link'})[0].text
+            item_name = brand + ' ' + name
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://shop.exclucitylife.com/' + item.findChildren('a', {'class': 'link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('select', {'class': 'single-option-selector'})[0]
+                sizes = sizes.findChildren('option')
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'product__price h5'})[0].text
+
+            text = tp.onenessboutique_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def saintalfred_com(bot, search_requests):
+    html = await get_html('https://www.saintalfred.com/collections/footwear')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-list-item'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            brand = item.findChildren('p', {'class': 'product-list-item-vendor vendor meta'})[0].text
+            name = item.findChildren('h3', {'class': 'product-list-item-title'})[0]
+            item_name = brand + ' ' + name.text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.saintalfred.com/' + name.findChildren('a')[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('select', {'class': 'single-option-selector'})[0]
+                sizes = sizes.findChildren('option')
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'product-price'})[0].text
+            item_price = item_price.replace('\n', '')
+            item_price = item_price.replace(' ', '')
+            text = tp.onenessboutique_com_text(item_url, item_name, sizes, item_price)
+            print(text)
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def undefeated_com(bot, search_requests):
+    html = await get_html('https://undefeated.com/collections/footwear?sort_by=created-descending')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'product-grid-item'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            title = item.findChildren('a', recursive=False)[0]
+            item_name = title['title']
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://undefeated.com/' + title['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('div', {'class': 'variants-wrapper clearfix'})[0]
+                sizes = sizes.findChildren('option')
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'money'})[0].text
+
+            text = tp.undefeated_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def kith_com(bot, search_requests):
+    html = await get_html('https://kith.com/collections/new-arrivals/sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('li', {'class': 'collection-product'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('h1', {'class': 'product-card__title'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://kith.com' + item.findChildren('a')[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = bs.find_all('span', {'class': 'product-card__price'})[0].text
+            item_price = item_price.replace('\n', '')
+            item_price = item_price.replace(' ', '')
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('div', {'class': 'swatch clearfix'})[0]
+                sizes = sizes.findChildren('label')
+            except Exception:
+                sizes = []
+
+            text = tp.kith_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def deadstock_ca(bot, search_requests):
+    html = await get_html('https://www.deadstock.ca/collections/new-arrivals#')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'grid-product__wrapper'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('span', {'class': 'grid-product__title'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.deadstock.ca' + item.findChildren('a', {'class': 'grid-product__meta'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('fieldset', {'class': 'single-option-radio'})[0]
+                sizes = sizes.findChildren('input')
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'money'})[0].text
+            text = tp.deadstock_ca_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def bluetilelounge_ca(bot, search_requests):
+    html = await get_html('https://bluetilelounge.ca/collections/shoes?sort_by=created-descending')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'prod-image'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('a')[0]
+            item_name = url['title']
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://bluetilelounge.ca' + url['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            product_page = await get_html(item_url)
+            bs = BeautifulSoup(product_page, 'lxml')
+
+            try:
+                sizes = bs.find_all('div', {'class': 'swatch-element'})
+            except Exception:
+                sizes = []
+
+            item_price = bs.find_all('span', {'class': 'product-price'})[0].text
+            text = tp.undefeated_com_text(item_url, item_name, sizes, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def hanon_shop_com(bot, search_requests):
+    html = await get_html('https://www.hanon-shop.com/collections/whats-new/cf-type-footwear?sort_by=created-descending')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'item centered'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('h2', {'class': 'product-name'})[0]
+            url = url.findChildren('a')[0]
+            item_name = url.text
+            item_name = item_name.replace('\n', '')
+            item_name = item_name.replace('\t', '')
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.hanon-shop.com' + url['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('span', {'class': 'money'})[0].text
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
+async def hannibalstore_it(bot, search_requests):
+    html = await get_html('https://hannibalstore.it/collections/sneakers')
+    bs = BeautifulSoup(html, 'lxml')
+    items = bs.find_all('div', {'class': 'grid__item wide--one-fifth large--one-quarter medium-down--one-half'})
+    print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('p', {'class': 'grid-link__title'})[0].text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://hannibalstore.it' + item.findChildren('a', {'class': 'grid-link text-center'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, loop):
+                continue
+
+            item_price = item.findChildren('p', {'class': 'grid-link__meta'})[0].text
+            item_price = item_price.replace('\n', '')
+            item_price = item_price.replace(' ', '')
+            item_price = item_price.replace('Regularprice', '')
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
     search_requests = [SearchRequest(1, 'stan smith', 640641207491493888)]
-    loop.run_until_complete(footdistrict_com(123, search_requests))
+    loop.run_until_complete(hannibalstore_it(123, search_requests))
