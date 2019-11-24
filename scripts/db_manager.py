@@ -72,9 +72,9 @@ class SearchRequestsDbManager:
 
 class ItemsShowedDbManager:
     @staticmethod
-    async def add(name, url, loop):
+    async def add(name, url, request_id, loop):
         con, cur = await create_con(loop)
-        await cur.execute(f'insert into items_showed values(%s, %s)', (name, url))
+        await cur.execute(f'insert into items_showed values(%s, %s, %s)', (name, url, request_id))
         await con.commit()
         con.close()
 
@@ -86,9 +86,26 @@ class ItemsShowedDbManager:
         con.close()
 
     @staticmethod
-    async def exist(url, loop):
+    async def exist(url, request_id, loop):
         con, cur = await create_con(loop)
-        await cur.execute('select count(*) from items_showed where url = %s', (url))
+        await cur.execute('select count(*) from items_showed where url = %s and request_id = %s', (url, request_id))
         r = await cur.fetchone()
         count = r[0]
         return count > 0
+
+    @staticmethod
+    async def exist_by_name(name, loop):
+        con, cur = await create_con(loop)
+        await cur.execute('select count(*) from items_showed where name = %s', (name))
+        r = await cur.fetchone()
+        count = r[0]
+        return count > 0
+
+    @staticmethod
+    async def count(loop):
+        con, cur = await create_con(loop)
+        await cur.execute('select count(*) from items_showed')
+        r = await cur.fetchone()
+        count = r[0]
+        return count
+

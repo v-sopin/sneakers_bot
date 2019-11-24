@@ -21,7 +21,7 @@ async def parse(bot):
         search_requests = await SearchRequestsDbManager.get_all(loop)
 
         cur = time.time()
-        
+        '''
         #  0
 
         try:
@@ -205,11 +205,13 @@ async def parse(bot):
         except Exception:
             print('Exception: back_door_it')
             await user.send('Exception: back_door_it')
+
         try:
             await blackboxstore_com(bot, search_requests)
         except Exception:
             print('Exception: blackboxstore_com')
             await user.send('Exception: blackboxstore_com')
+
         # https://www.excelsiormilano.com/
         try:
             await footdistrict_com(bot, search_requests)
@@ -297,11 +299,13 @@ async def parse(bot):
         except Exception:
             print('Exception: hannibalstore_it')
             await user.send('Exception: hannibalstore_it')
-        try:
-            await brandshop_ru(bot, search_requests)
-        except Exception:
-            print('Exception: brandshop_ru')
-            await user.send('Exception: brandshop_ru')
+        '''
+        #try:
+        await brandshop_ru(bot, search_requests)
+        #except Exception:
+         #   print('Exception: brandshop_ru')
+          #  await user.send('Exception: brandshop_ru')
+        '''
         try:
             await sneakerhead_ru(bot, search_requests)
         except Exception:
@@ -322,7 +326,7 @@ async def parse(bot):
         except Exception:
             print('Exception: urbanjunglestore_com')
             await user.send('Exception: urbanjunglestore_com')
-
+        '''
         #  60
         print('Result: ', time.time() - cur)
 
@@ -352,8 +356,11 @@ async def get_html(url):
 async def hypedc_com(bot, search_requests):
     html = await get_html('https://www.hypedc.com/new-arrivals?dir=desc&order=news_from_date')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('product-block', {'class': 'item'})
+    items = bs.find_all('product-block', {'class': 'item'}, limit=10)
     print(len(items))
+
+    if len(items) > 10:
+        items = items[:10]
 
     for sr in search_requests:
         for item in items:
@@ -367,7 +374,7 @@ async def hypedc_com(bot, search_requests):
             item_url_el = item.findChildren('a')[0]
             item_url = item_url_el['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_info = json.loads(item_url_el['data-product'])
@@ -375,7 +382,7 @@ async def hypedc_com(bot, search_requests):
 
             text = tp.hypedc_com_text(item_info, item_sizes, item_url)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -385,8 +392,11 @@ async def hypedc_com(bot, search_requests):
 async def subtypestore_com(bot, search_requests):
     html = await get_html('https://www.subtypestore.com/categories/latest-sneaker-releases?sort=dateDesc&pages=5')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'link block relative w-full h-full overflow-hidden'})
+    items = bs.find_all('a', {'class': 'link block relative w-full h-full overflow-hidden'}, limit=10)
     print(len(items))
+
+    if len(items) > 10:
+        items = items[:10]
 
     for sr in search_requests:
         for item in items:
@@ -397,7 +407,7 @@ async def subtypestore_com(bot, search_requests):
 
             item_url = 'https://www.subtypestore.com' + item['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -408,7 +418,7 @@ async def subtypestore_com(bot, search_requests):
 
             text = tp.subtypestore_com_text(item_url, item_name, item_sizes, price.text)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -419,7 +429,7 @@ async def lockwood_avenue_com(bot, search_requests):
     html = await get_html(
         'https://www.lockwood-avenue.com/en/latest/?mode=grid&limit=100&sort=default&max=700&min=0&sort=newest&brand=0')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'center info'})
+    items = bs.find_all('div', {'class': 'center info'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -432,7 +442,7 @@ async def lockwood_avenue_com(bot, search_requests):
 
             item_url = item_info['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             price = item.findChildren('p')[0].text
@@ -444,7 +454,7 @@ async def lockwood_avenue_com(bot, search_requests):
 
             text = tp.lockwood_avenue_com_text(item_url, item_name, sizes, price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -454,7 +464,7 @@ async def lockwood_avenue_com(bot, search_requests):
 async def footshop_eu(bot, search_requests):
     html = await get_html('https://www.footshop.eu/en/1551-latest/categories-mens_shoes/gender-male/location-available_online/orderby-activated_at/orderway-desc')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'Product_text_2vcbK'})
+    items = bs.find_all('a', {'class': 'Product_text_2vcbK'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -467,12 +477,12 @@ async def footshop_eu(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -482,7 +492,7 @@ async def footshop_eu(bot, search_requests):
 async def footshop_com(bot, search_requests):
     html = await get_html('https://www.footshop.com/en/1551-latest/categories-mens_shoes/gender-male/location-available_online/orderby-activated_at/orderway-desc')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'Product_text_2vcbK'})
+    items = bs.find_all('a', {'class': 'Product_text_2vcbK'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -495,12 +505,12 @@ async def footshop_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -529,7 +539,7 @@ async def nakedcph_com(bot, search_requests):
 async def rezetstore_dk(bot, search_requests):
     html = await get_html('https://rezetstore.dk/en/sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'ProductTeaser__link'})
+    items = bs.find_all('a', {'class': 'ProductTeaser__link'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -547,12 +557,12 @@ async def rezetstore_dk(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.rezetstore_dk_text(item_url, item_name, item_sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -561,7 +571,7 @@ async def rezetstore_dk(bot, search_requests):
 async def stormfashion_dk(bot, search_requests):
     html = await get_html('https://stormfashion.dk/new')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'storm-item'})
+    items = bs.find_all('li', {'class': 'storm-item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -578,7 +588,7 @@ async def stormfashion_dk(bot, search_requests):
             if not compare(sr.request, item_lower_case):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -590,7 +600,7 @@ async def stormfashion_dk(bot, search_requests):
 
             text = tp.stormfashion_dk_text(item_url, item_name, price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -600,7 +610,7 @@ async def stormfashion_dk(bot, search_requests):
 async def stoy_com(bot, search_requests):
     html = await get_html('https://stoy.com/en/men/footwear')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'item product-item product'})
+    items = bs.find_all('div', {'class': 'item product-item product'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -614,12 +624,12 @@ async def stoy_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -629,7 +639,7 @@ async def stoy_com(bot, search_requests):
 async def dev_thegoodlifespace_com(bot, search_requests):
     html = await get_html('http://dev.thegoodlifespace.com/latest-arrivals/all-latest/footwear-men.html')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product details product-item-details'})
+    items = bs.find_all('div', {'class': 'product details product-item-details'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -647,12 +657,12 @@ async def dev_thegoodlifespace_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -662,7 +672,7 @@ async def dev_thegoodlifespace_com(bot, search_requests):
 async def basket4ballers_com(bot, search_requests):
     html = await get_html('https://www.basket4ballers.com/en/152-shoes')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'block-product__link product_img_link'})
+    items = bs.find_all('a', {'class': 'block-product__link product_img_link'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -676,12 +686,12 @@ async def basket4ballers_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.basket4ballers_com(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -691,7 +701,7 @@ async def basket4ballers_com(bot, search_requests):
 async def bouncewear_com(bot, search_requests):
     html = await get_html('https://bouncewear.com/en/category/schoenen')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product'})
+    items = bs.find_all('div', {'class': 'product'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -703,7 +713,7 @@ async def bouncewear_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -713,7 +723,7 @@ async def bouncewear_com(bot, search_requests):
             sizes = sizes.findChildren('label', {'class': 'checkbox__label'})
 
             text = tp.bouncewear_com_text(item_url, item_name, sizes, item_price)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -732,7 +742,7 @@ async def caliroots_com(bot, search_requests):
 async def chezvibe_com(bot, search_requests):
     html = await get_html('https://www.chezvibe.com/en/new-products')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-container'})
+    items = bs.find_all('div', {'class': 'product-container'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -746,7 +756,7 @@ async def chezvibe_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -757,7 +767,7 @@ async def chezvibe_com(bot, search_requests):
 
             text = tp.chezvibe_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -775,7 +785,7 @@ async def footlocker_fr(bot, search_requests):
 async def galerieslafayette_com(bot, search_requests):
     html = await get_html('https://www.galerieslafayette.com/c/nouveautes/ct/homme-chaussures/tri/nouveautes')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'pdt-cell pdt-cell-with-hover js-pdt-cell'})
+    items = bs.find_all('li', {'class': 'pdt-cell pdt-cell-with-hover js-pdt-cell'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -788,7 +798,7 @@ async def galerieslafayette_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -800,7 +810,7 @@ async def galerieslafayette_com(bot, search_requests):
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -810,7 +820,7 @@ async def galerieslafayette_com(bot, search_requests):
 async def hubbastille_com(bot, search_requests):
     html = await get_html('http://hubbastille.com/en/19-les-nouveautes')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'mix cs-item'})
+    items = bs.find_all('div', {'class': 'mix cs-item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -826,7 +836,7 @@ async def hubbastille_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -837,7 +847,7 @@ async def hubbastille_com(bot, search_requests):
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -856,7 +866,7 @@ async def jdsports_fr(bot, search_requests):
 async def impact_premium_com(bot, search_requests):
     html = await get_html('https://www.impact-premium.com/fr/nouveaux-produits?n=60')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-container'})
+    items = bs.find_all('div', {'class': 'product-container'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -869,7 +879,7 @@ async def impact_premium_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -880,7 +890,7 @@ async def impact_premium_com(bot, search_requests):
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -899,7 +909,7 @@ async def lebuzzsneakershop_com(bot, search_requests):
 async def lerayonfrais_fr(bot, search_requests):
     html = await get_html('https://lerayonfrais.fr/fr/30-nouveaut%C3%A9s')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'listing block'})
+    items = bs.find_all('div', {'class': 'listing block'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -919,7 +929,7 @@ async def lerayonfrais_fr(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -930,7 +940,7 @@ async def lerayonfrais_fr(bot, search_requests):
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -949,7 +959,7 @@ async def milk_store_com(bot, search_requests):
 async def opiumparis_com(bot, search_requests):
     html = await get_html('https://www.opiumparis.com/en/16-new-arrivals')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'thumbnail-container ta-c'})
+    items = bs.find_all('div', {'class': 'thumbnail-container ta-c'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -967,12 +977,12 @@ async def opiumparis_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -986,7 +996,7 @@ async def shinzo_paris(bot, search_requests):
         print('shinzo.paris exception')
         return
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-inner'})
+    items = bs.find_all('div', {'class': 'product-inner'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -999,7 +1009,7 @@ async def shinzo_paris(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1014,7 +1024,7 @@ async def shinzo_paris(bot, search_requests):
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
             print(text)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1024,7 +1034,7 @@ async def shinzo_paris(bot, search_requests):
 async def shoezgallery_com(bot, search_requests):
     html = await get_html('https://www.shoezgallery.com/en/32-latest#')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-block'})
+    items = bs.find_all('div', {'class': 'product-block'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1040,12 +1050,12 @@ async def shoezgallery_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1064,7 +1074,7 @@ async def sizeofficial_fr(bot, search_requests):
 async def snkrs_com(bot, search_requests):
     html = await get_html('https://www.snkrs.com/en/166-new')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-container'})
+    items = bs.find_all('div', {'class': 'product-container'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1078,7 +1088,7 @@ async def snkrs_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1088,7 +1098,7 @@ async def snkrs_com(bot, search_requests):
 
             text = tp.galerieslafayette_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1098,7 +1108,7 @@ async def snkrs_com(bot, search_requests):
 async def thenextdoor_fr(bot, search_requests):
     html = await get_html('https://thenextdoor.fr/collections/nouveautes/categorie_basket?sort_by=created-descending')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'grid-view-item product-card'})
+    items = bs.find_all('div', {'class': 'grid-view-item product-card'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1114,7 +1124,7 @@ async def thenextdoor_fr(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1124,7 +1134,7 @@ async def thenextdoor_fr(bot, search_requests):
 
             text = tp.thenextdoor_fr_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1134,7 +1144,7 @@ async def thenextdoor_fr(bot, search_requests):
 async def the_broken_arm_com(bot, search_requests):
     html = await get_html('https://www.the-broken-arm.com/en/57-sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-container'})
+    items = bs.find_all('div', {'class': 'product-container'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1145,7 +1155,7 @@ async def the_broken_arm_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1157,7 +1167,7 @@ async def the_broken_arm_com(bot, search_requests):
 
             text = tp.the_broken_arm_com_tex(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1167,7 +1177,7 @@ async def the_broken_arm_com(bot, search_requests):
 async def zalando_fr(bot, search_requests):
     html = await get_html('https://www.zalando.fr/baskets-homme/?activation_date=0-7&order=activation_date')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'cat_cardWrap-2UHT7'})
+    items = bs.find_all('div', {'class': 'cat_cardWrap-2UHT7'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1181,12 +1191,12 @@ async def zalando_fr(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
             print(text)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1196,7 +1206,7 @@ async def zalando_fr(bot, search_requests):
 async def einhalb_com(bot, search_requests):
     html = await get_html('https://www.43einhalb.com/en/sneaker/page/1/sort/date_new/perpage/36')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'itemWrapper pOverlay'})
+    items = bs.find_all('div', {'class': 'itemWrapper pOverlay'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1215,12 +1225,12 @@ async def einhalb_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.the_broken_arm_com_tex(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1238,7 +1248,7 @@ async def afew_store_com(bot, search_requests):
 async def asphaltgold_com(bot, search_requests):
     html = await get_html('https://www.asphaltgold.com/de/category/men/sneaker/new/')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'product-url'})
+    items = bs.find_all('a', {'class': 'product-url'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1253,12 +1263,12 @@ async def asphaltgold_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1268,7 +1278,7 @@ async def asphaltgold_com(bot, search_requests):
 async def allikestore_com(bot, search_requests):
     html = await get_html('https://www.allikestore.com/default/sneakers/mens-sneakers.html#page=1')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'item'})
+    items = bs.find_all('li', {'class': 'item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1285,12 +1295,12 @@ async def allikestore_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.allikestore_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1311,6 +1321,10 @@ async def kickz_com(bot, search_requests):
     bs = BeautifulSoup(html, 'lxml')
     items = bs.find_all('div', {'class': 'categoryContent'})[0]
     items = items.findChildren(recursive=False)
+
+    if len(items) > 10:
+        items = items[:10]
+
     print(len(items))
 
     for sr in search_requests:
@@ -1326,12 +1340,12 @@ async def kickz_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.basket4ballers_com(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1345,6 +1359,12 @@ async def kickzpremium_com(bot, search_requests):
     items = items.findChildren(recursive=False)
     print(len(items))
 
+    if len(items) > 10:
+        items = items[:10]
+
+    if len(items) > 10:
+        items = items[:10]
+
     for sr in search_requests:
         for item in items:
             item_url = item.findChildren('button', {'class': 'btn ref_link'})[0]['href']
@@ -1358,12 +1378,12 @@ async def kickzpremium_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.basket4ballers_com(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1382,7 +1402,7 @@ async def overkillshop_com(bot, search_requests):
 async def rimowa_com(bot, search_requests):
     html = await get_html('https://www.rimowa.com/de/en/new-colors/')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'grid-tile'})
+    items = bs.find_all('li', {'class': 'grid-tile'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1396,12 +1416,12 @@ async def rimowa_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1429,7 +1449,7 @@ async def sotostore_com(bot, search_requests):
 async def suppastore_com(bot, search_requests):
     html = await get_html('https://www.suppastore.com/en/latest')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-item-info'})
+    items = bs.find_all('div', {'class': 'product-item-info'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1444,12 +1464,12 @@ async def suppastore_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1459,7 +1479,7 @@ async def suppastore_com(bot, search_requests):
 async def vooberlin_com(bot, search_requests):
     html = await get_html('https://www.vooberlin.com/sneakers/new-releases/')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product--box box--minimal'})
+    items = bs.find_all('div', {'class': 'product--box box--minimal'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1480,12 +1500,12 @@ async def vooberlin_com(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1495,7 +1515,7 @@ async def vooberlin_com(bot, search_requests):
 async def zupport_de(bot, search_requests):
     html = await get_html('https://zupport.de/skateshoes?p=1')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product--info'})
+    items = bs.find_all('div', {'class': 'product--info'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1511,7 +1531,7 @@ async def zupport_de(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1521,7 +1541,7 @@ async def zupport_de(bot, search_requests):
 
             text = tp.the_broken_arm_com_tex(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1531,8 +1551,11 @@ async def zupport_de(bot, search_requests):
 async def aw_lab_com(bot, search_requests):
     html = await get_html('https://www.aw-lab.com/shop/uomo/scarpe')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-data-container'})
+    items = bs.find_all('div', {'class': 'product-data-container'}, limit=10)
     print(len(items))
+
+    if len(items) > 10:
+        items = items[:10]
 
     for sr in search_requests:
         for item in items:
@@ -1544,7 +1567,7 @@ async def aw_lab_com(bot, search_requests):
             item_url = item.findChildren('div', {'class': 'product-detail-link'})[0]
             item_url = item_url.findChildren('a')[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('p', {'class': 'small-price'})[0].text
@@ -1552,7 +1575,7 @@ async def aw_lab_com(bot, search_requests):
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1571,8 +1594,11 @@ async def antonioli_eu(bot, search_requests):
 async def back_door_it(bot, search_requests):
     html = await get_html('https://www.back-door.it/product-category/sneakers/#Sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('a', {'class': 'product-category product-info'})
+    items = bs.find_all('a', {'class': 'product-category product-info'}, limit=10)
     print(len(items))
+
+    if len(items) > 10:
+        items = items[:10]
 
     for sr in search_requests:
         for item in items:
@@ -1583,7 +1609,7 @@ async def back_door_it(bot, search_requests):
 
             item_url = item['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('span', {'class': 'woocommerce-Price-amount amount'})[0].text
@@ -1592,7 +1618,7 @@ async def back_door_it(bot, search_requests):
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1602,7 +1628,8 @@ async def back_door_it(bot, search_requests):
 async def blackboxstore_com(bot, search_requests):
     html = await get_html('https://www.blackboxstore.com/it/sneakers/uomo.html')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'item'})
+    items = bs.find_all('li', {'class': 'item'}, limit=10)
+
     print(len(items))
 
     for sr in search_requests:
@@ -1616,7 +1643,7 @@ async def blackboxstore_com(bot, search_requests):
 
             item_url = item.findChildren('a', {'class': 'product-image'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('span', {'class': 'price'})[0].text
@@ -1628,9 +1655,9 @@ async def blackboxstore_com(bot, search_requests):
 
             sizes = bs.find_all('span', {'class': 'swatch-label'})
 
-            text = tp.bouncewear_com_text(item_url, item_name, sizes, item_price)
+            text = tp.blackboxstore_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1640,7 +1667,7 @@ async def blackboxstore_com(bot, search_requests):
 async def footdistrict_com(bot, search_requests):
     html = await get_html('https://footdistrict.com/novedades.html')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'item'})
+    items = bs.find_all('li', {'class': 'item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1652,7 +1679,7 @@ async def footdistrict_com(bot, search_requests):
 
             item_url = item.findChildren('a', {'class': 'mp_quickview_icon mobilehidden'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('span', {'class': 'price'})[0].text
@@ -1661,7 +1688,7 @@ async def footdistrict_com(bot, search_requests):
 
             text = tp.common_text(item_url, item_name, item_price)
             print(text)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1679,8 +1706,11 @@ async def luisaviaroma_com(bot, search_requests):
 async def it_oneblockdown_it(bot, search_requests):
     html = await get_html('https://row.oneblockdown.it/collections/latest')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-card'})
+    items = bs.find_all('div', {'class': 'product-card'}, limit=10)
     print(len(items))
+
+    if len(items) > 10:
+        items = items[:10]
 
     for sr in search_requests:
         for item in items:
@@ -1693,13 +1723,13 @@ async def it_oneblockdown_it(bot, search_requests):
 
             item_url = 'https://row.oneblockdown.it/' + item.findChildren('a', {'class': 'vendor'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             price = item.find_all('span', {'class': 'price'})[0].text
 
             text = tp.common_text(item_url, item_name, price)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1709,8 +1739,11 @@ async def it_oneblockdown_it(bot, search_requests):
 async def sivasdescalzo_com(bot, search_requests):
     html = await get_html('https://www.sivasdescalzo.com/en/lifestyle/sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product'})
+    items = bs.find_all('div', {'class': 'product'}, limit=10)
     print(len(items))
+
+    if len(items) > 10:
+        items = items[:10]
 
     for sr in search_requests:
         for item in items:
@@ -1723,7 +1756,7 @@ async def sivasdescalzo_com(bot, search_requests):
 
             item_url = item.findChildren('a', recursive=False)[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1738,7 +1771,7 @@ async def sivasdescalzo_com(bot, search_requests):
             item_price = bs.find_all('span', {'class': 'product-price'})[0].text
 
             text = tp.sivasdescalzo_com_text(item_url, item_name, sizes, item_price)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1757,7 +1790,7 @@ async def off_white_com(bot, search_requests):
 async def shop_havenshop_com(bot, search_requests):
     html = await get_html('https://www.sivasdescalzo.com/en/lifestyle/sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product'})
+    items = bs.find_all('div', {'class': 'product'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1770,8 +1803,8 @@ async def shop_havenshop_com(bot, search_requests):
                 continue
 
             item_url = item.findChildren('a', recursive=False)[0]['href']
-            print(item_name, item_url)
-            if await ItemsShowedDbManager.exist(item_url, loop):
+
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1786,7 +1819,7 @@ async def shop_havenshop_com(bot, search_requests):
             item_price = bs.find_all('span', {'class': 'product-price'})[0].text
 
             text = tp.sivasdescalzo_com_text(item_url, item_name, sizes, item_price)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1818,6 +1851,9 @@ async def aimeleondore_com(bot, search_requests):
     items = items.findChildren('div', recursive=False)
     print(len(items))
 
+    if len(items) > 10:
+        items = items[:10]
+
     for sr in search_requests:
         for item in items[:-2]:
             item_name = item.findChildren('div', {'class': 'grid-link__title collectionpage-product-title'})[0].text
@@ -1827,12 +1863,12 @@ async def aimeleondore_com(bot, search_requests):
 
             item_url = 'https://www.aimeleondore.com/' + item.findChildren('a', {'class': 'grid-link'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             text = tp.aimeleondore_com_text(item_name, item_url)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1842,7 +1878,7 @@ async def aimeleondore_com(bot, search_requests):
 async def lustmexico_com(bot, search_requests):
     html = await get_html('https://www.lustmexico.com/collections/calzado-womens?sort_by=created-descending')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'grid-product__content'})
+    items = bs.find_all('div', {'class': 'grid-product__content'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1854,7 +1890,7 @@ async def lustmexico_com(bot, search_requests):
 
             item_url = 'https://www.lustmexico.com/' + item.findChildren('a', {'class': 'grid-product__link'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1869,7 +1905,7 @@ async def lustmexico_com(bot, search_requests):
             item_price = bs.find_all('span', {'class': 'product__price'})[0]['content']
 
             text = tp.lustmexico_com_text(item_url, item_name, sizes, item_price)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1879,7 +1915,7 @@ async def lustmexico_com(bot, search_requests):
 async def onenessboutique_com(bot, search_requests):
     html = await get_html('https://www.onenessboutique.com/collections/mens-shoes-1')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-wrap'})
+    items = bs.find_all('div', {'class': 'product-wrap'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1891,7 +1927,7 @@ async def onenessboutique_com(bot, search_requests):
 
             item_url = 'https://www.onenessboutique.com/' + item.findChildren('a', {'class': 'hidden-product-link'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1907,7 +1943,7 @@ async def onenessboutique_com(bot, search_requests):
 
             text = tp.onenessboutique_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1917,7 +1953,7 @@ async def onenessboutique_com(bot, search_requests):
 async def shop_exclucitylife_com(bot, search_requests):
     html = await get_html('https://shop.exclucitylife.com/collections/new-arrivals-men')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-item product-item--push'})
+    items = bs.find_all('div', {'class': 'product-item product-item--push'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1931,7 +1967,7 @@ async def shop_exclucitylife_com(bot, search_requests):
 
             item_url = 'https://shop.exclucitylife.com/' + item.findChildren('a', {'class': 'link'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1947,7 +1983,7 @@ async def shop_exclucitylife_com(bot, search_requests):
 
             text = tp.onenessboutique_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1957,7 +1993,7 @@ async def shop_exclucitylife_com(bot, search_requests):
 async def saintalfred_com(bot, search_requests):
     html = await get_html('https://www.saintalfred.com/collections/footwear')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-list-item'})
+    items = bs.find_all('div', {'class': 'product-list-item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -1971,7 +2007,7 @@ async def saintalfred_com(bot, search_requests):
 
             item_url = 'https://www.saintalfred.com/' + name.findChildren('a')[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -1987,8 +2023,8 @@ async def saintalfred_com(bot, search_requests):
             item_price = item_price.replace('\n', '')
             item_price = item_price.replace(' ', '')
             text = tp.onenessboutique_com_text(item_url, item_name, sizes, item_price)
-            print(text)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -1998,7 +2034,7 @@ async def saintalfred_com(bot, search_requests):
 async def undefeated_com(bot, search_requests):
     html = await get_html('https://undefeated.com/collections/footwear?sort_by=created-descending')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-grid-item'})
+    items = bs.find_all('div', {'class': 'product-grid-item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2011,7 +2047,7 @@ async def undefeated_com(bot, search_requests):
 
             item_url = 'https://undefeated.com/' + title['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -2027,7 +2063,7 @@ async def undefeated_com(bot, search_requests):
 
             text = tp.undefeated_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2037,7 +2073,7 @@ async def undefeated_com(bot, search_requests):
 async def kith_com(bot, search_requests):
     html = await get_html('https://kith.com/collections/new-arrivals/sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'collection-product'})
+    items = bs.find_all('li', {'class': 'collection-product'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2049,7 +2085,7 @@ async def kith_com(bot, search_requests):
 
             item_url = 'https://kith.com' + item.findChildren('a')[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = bs.find_all('span', {'class': 'product-card__price'})[0].text
@@ -2067,7 +2103,7 @@ async def kith_com(bot, search_requests):
 
             text = tp.kith_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2077,7 +2113,7 @@ async def kith_com(bot, search_requests):
 async def deadstock_ca(bot, search_requests):
     html = await get_html('https://www.deadstock.ca/collections/new-arrivals#')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'grid-product__wrapper'})
+    items = bs.find_all('div', {'class': 'grid-product__wrapper'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2089,7 +2125,7 @@ async def deadstock_ca(bot, search_requests):
 
             item_url = 'https://www.deadstock.ca' + item.findChildren('a', {'class': 'grid-product__meta'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -2104,7 +2140,7 @@ async def deadstock_ca(bot, search_requests):
             item_price = bs.find_all('span', {'class': 'money'})[0].text
             text = tp.deadstock_ca_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2114,7 +2150,7 @@ async def deadstock_ca(bot, search_requests):
 async def bluetilelounge_ca(bot, search_requests):
     html = await get_html('https://bluetilelounge.ca/collections/shoes?sort_by=created-descending')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'prod-image'})
+    items = bs.find_all('div', {'class': 'prod-image'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2127,7 +2163,7 @@ async def bluetilelounge_ca(bot, search_requests):
 
             item_url = 'https://bluetilelounge.ca' + url['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -2141,7 +2177,7 @@ async def bluetilelounge_ca(bot, search_requests):
             item_price = bs.find_all('span', {'class': 'product-price'})[0].text
             text = tp.undefeated_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2151,7 +2187,7 @@ async def bluetilelounge_ca(bot, search_requests):
 async def hanon_shop_com(bot, search_requests):
     html = await get_html('https://www.hanon-shop.com/collections/whats-new/cf-type-footwear?sort_by=created-descending')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'item centered'})
+    items = bs.find_all('div', {'class': 'item centered'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2167,13 +2203,13 @@ async def hanon_shop_com(bot, search_requests):
 
             item_url = 'https://www.hanon-shop.com' + url['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('span', {'class': 'money'})[0].text
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2183,7 +2219,7 @@ async def hanon_shop_com(bot, search_requests):
 async def hannibalstore_it(bot, search_requests):
     html = await get_html('https://hannibalstore.it/collections/sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'grid__item wide--one-fifth large--one-quarter medium-down--one-half'})
+    items = bs.find_all('div', {'class': 'grid__item wide--one-fifth large--one-quarter medium-down--one-half'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2195,7 +2231,7 @@ async def hannibalstore_it(bot, search_requests):
 
             item_url = 'https://hannibalstore.it' + item.findChildren('a', {'class': 'grid-link text-center'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('p', {'class': 'grid-link__meta'})[0].text
@@ -2205,7 +2241,7 @@ async def hannibalstore_it(bot, search_requests):
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2249,7 +2285,7 @@ async def km20_ru(bot, search_requests):
 async def brandshop_ru(bot, search_requests):
     html = await get_html('https://brandshop.ru/new/')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product'})
+    items = bs.find_all('div', {'class': 'product'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2259,6 +2295,23 @@ async def brandshop_ru(bot, search_requests):
             try:
                 item_name = url['title']
             except KeyError:
+                item_name = item.findChildren('h2')[0].text
+
+                if not compare(sr.request, item_name):
+                    continue
+
+                photo_url = item.findChildren('img')[0]['src']
+
+                if await ItemsShowedDbManager.exist(photo_url, sr.id, loop):
+                    continue
+
+                await ItemsShowedDbManager.add(item_name, photo_url, sr.id, loop)
+
+                text = tp.brandshop_com_soon_text(item_name, photo_url)
+
+                channel_id = int(sr.channel_id)
+                await bot.get_channel(channel_id).send(text)
+
                 continue
 
             if not compare(sr.request, item_name):
@@ -2266,14 +2319,14 @@ async def brandshop_ru(bot, search_requests):
 
             item_url = url['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('div', {'class': 'price price-box'})[0].text + ' ₽'
             item_price = item_price.replace('р', '')
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2283,7 +2336,7 @@ async def brandshop_ru(bot, search_requests):
 async def sneakerhead_ru(bot, search_requests):
     html = await get_html('https://sneakerhead.ru/isnew/shoes/sneakers/')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-card'})
+    items = bs.find_all('div', {'class': 'product-card'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2295,9 +2348,9 @@ async def sneakerhead_ru(bot, search_requests):
             if not compare(sr.request, item_name):
                 continue
 
-            item_url = 'https://sneakerhead.ru' +  item.findChildren('a', {'class': 'product-card__link'})[0]['href']
+            item_url = 'https://sneakerhead.ru' + item.findChildren('a', {'class': 'product-card__link'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = bs.find_all('span', {'class': 'product-card__price-value'})[0].text + ' ₽'
@@ -2306,7 +2359,7 @@ async def sneakerhead_ru(bot, search_requests):
 
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2316,7 +2369,7 @@ async def sneakerhead_ru(bot, search_requests):
 async def slamjam_com(bot, search_requests):
     html = await get_html('https://www.slamjam.com/en_IT/man/footwear/sneakers')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'itemprop': 'itemListElement'})
+    items = bs.find_all('div', {'itemprop': 'itemListElement'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2331,7 +2384,7 @@ async def slamjam_com(bot, search_requests):
 
             item_url = 'https://www.slamjam.com' + item.findChildren('a', {'class': 'link'})[0]['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             product_page = await get_html(item_url)
@@ -2347,7 +2400,7 @@ async def slamjam_com(bot, search_requests):
             item_price = bs.find_all('span', {'class': 'value'})[0]['content'] + ' €'
             text = tp.sivasdescalzo_com_text(item_url, item_name, sizes, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2357,7 +2410,7 @@ async def slamjam_com(bot, search_requests):
 async def tres_bien_com(bot, search_requests):
     html = await get_html('https://tres-bien.com/new-items?cat=10')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('article', {'class': 'product-item-info'})
+    items = bs.find_all('article', {'class': 'product-item-info'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2370,13 +2423,13 @@ async def tres_bien_com(bot, search_requests):
 
             item_url = url['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('span', {'class': 'price'})[0].text
             text = tp.common_text(item_url, item_name, item_price)
 
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2386,7 +2439,7 @@ async def tres_bien_com(bot, search_requests):
 async def urbanjunglestore_com(bot, search_requests):
     html = await get_html('https://www.urbanjunglestore.com/en/men/footwear/sneakers.html')
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('li', {'class': 'item'})
+    items = bs.find_all('li', {'class': 'item'}, limit=10)
     print(len(items))
 
     for sr in search_requests:
@@ -2400,12 +2453,12 @@ async def urbanjunglestore_com(bot, search_requests):
 
             item_url = url['href']
 
-            if await ItemsShowedDbManager.exist(item_url, loop):
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
             item_price = item.findChildren('span', {'class': 'price'})[0].text
             text = tp.common_text(item_url, item_name, item_price)
-            await ItemsShowedDbManager.add(item_name, item_url, loop)
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
 
             channel_id = int(sr.channel_id)
             await bot.get_channel(channel_id).send(text)
@@ -2414,5 +2467,5 @@ async def urbanjunglestore_com(bot, search_requests):
 
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
-    search_requests = [SearchRequest(1, 'stan smith', 640641207491493888)]
-    loop.run_until_complete(urbanjunglestore_com(123, search_requests))
+    search_requests = [SearchRequest(1, 'air force 1', 640641207491493888)]
+    loop.run_until_complete(brandshop_ru(123, search_requests))

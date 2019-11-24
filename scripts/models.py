@@ -6,6 +6,7 @@ class SearchRequest:
 
 
 class ItemShowed:
-    def __init__(self, name, url):
+    def __init__(self, name, url, request_id):
         self.name = name
         self.url = url
+        self.request_id = request_id

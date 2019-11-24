@@ -422,3 +422,28 @@ def hanon_shop_com_text(url, item_name, sizes, price):
 '''
     text += sizes_text
     return text
+
+
+def blackboxstore_com_text(url, item_name, sizes, price):
+    sizes_text = ''
+    for size in sizes:
+        if 'not in stock' not in size.text:
+            sizes_text += f'''{size.text}'''
+
+    text = f'''**{item_name}**
+**Цена:** {price}
+
+**Ссылка на товар:** {url}
+
+**Размеры**'''
+    text += sizes_text
+    return text
+
+
+def brandshop_com_soon_text(name, photo_url):
+    text = f'''**{name}**
+
+Скоро на https://brandshop.ru/new/
+
+Фото: {photo_url}'''
+    return text

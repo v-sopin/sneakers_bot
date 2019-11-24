@@ -58,6 +58,19 @@ async def show_requests(ctx, request=None):
     await channel.send(text)
 
 
+@bot.command(name='clear-base')
+@commands.has_role('admin')
+async def show_requests(ctx, request=None):
+    channel = ctx.message.channel
+    count = await ItemsShowedDbManager.count(loop)
+
+    await ItemsShowedDbManager.clear(loop)
+
+    text = f'База очщена, было удалено **{count}** результата поиска'
+
+    await channel.send(text)
+
+
 @bot.command(name='delete')
 @commands.has_role('admin')
 async def delete(ctx, request_id=None):
