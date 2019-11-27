@@ -1,14 +1,23 @@
 import time
 import json
+import random
 import asyncio
 import aiohttp
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from scripts.db_manager import SearchRequestsDbManager, ItemsShowedDbManager
 from scripts.models import SearchRequest
 import scripts.text_parsers as tp
 from scripts.config import DEVELOPER_ID
-
 loop = asyncio.get_event_loop()
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument(
+    "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36")
+
+driver = Chrome(options=chrome_options)
 
 
 async def parse(bot):
@@ -21,9 +30,9 @@ async def parse(bot):
         search_requests = await SearchRequestsDbManager.get_all(loop)
 
         cur = time.time()
-        '''
-        #  0
 
+        #  0
+        
         try:
             await hypedc_com(bot, search_requests)
         except Exception:
@@ -299,13 +308,13 @@ async def parse(bot):
         except Exception:
             print('Exception: hannibalstore_it')
             await user.send('Exception: hannibalstore_it')
-        '''
-        #try:
-        await brandshop_ru(bot, search_requests)
-        #except Exception:
-         #   print('Exception: brandshop_ru')
-          #  await user.send('Exception: brandshop_ru')
-        '''
+
+        try:
+            await brandshop_ru(bot, search_requests)
+        except Exception:
+            print('Exception: brandshop_ru')
+            await user.send('Exception: brandshop_ru')
+
         try:
             await sneakerhead_ru(bot, search_requests)
         except Exception:
@@ -326,8 +335,21 @@ async def parse(bot):
         except Exception:
             print('Exception: urbanjunglestore_com')
             await user.send('Exception: urbanjunglestore_com')
-        '''
+
         #  60
+
+        try:
+            await adidas_ru(bot, search_requests)
+        except Exception:
+            print('Exception: adidas_ru')
+            await user.send('Exception: adidas_ru')
+        try:
+            await nike_com(bot, search_requests)
+        except Exception:
+            print('Exception: nike_com')
+            await user.send('Exception: nike_com')
+
+
         print('Result: ', time.time() - cur)
 
 
@@ -348,9 +370,20 @@ def compare(request, search_result):
 
 
 async def get_html(url):
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+    ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36'
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), headers={'User-Agent': ua}) as session:
         async with session.request('get', url) as responce:
             return await responce.content.read()
+
+
+def get_html_selenium(url, driver):
+
+    driver.get(url)
+    time.sleep(5)
+
+    html = driver.page_source
+
+    return html
 
 
 async def hypedc_com(bot, search_requests):
@@ -1780,10 +1813,10 @@ async def sivasdescalzo_com(bot, search_requests):
 
 #  FAIL
 async def off_white_com(bot, search_requests):
-    html = await get_html('https://www.off---white.com/en/NZ/section/new-arrivals')
+    html =  get_html_selenium('https://www.off---white.com/en/NZ/section/new-arrivals', driver)
     bs = BeautifulSoup(html, 'lxml')
     print(html)
-    items = bs.find_all('article', {'class': 'product'})
+    items = bs.find_all('article', {'class': 'product'}, limit=10)
     print(len(items))
 
 
@@ -2256,21 +2289,63 @@ async def yeezysupply_com(bot, search_requests):
     print(len(items))
 
 
-#  FAIL
 async def adidas_ru(bot, search_requests):
-    html = await get_html('https://www.adidas.ru/muzhchiny-obuv-novinki?sort=newest-to-oldest')
+    html = get_html_selenium('https://www.adidas.ru/muzhchiny-obuv-novinki?sort=newest-to-oldest', driver)
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'col-s-6 col-m-4 col-l-6 no-gutters plp-column___3gy6t'})
+    items = bs.find_all('div', {'class': 'gl-product-card glass-product-card___1PGiI'}, limit=10)
     print(len(items))
 
+    for sr in search_requests:
+        for item in items:
+            item_name = item.findChildren('div', {'class': 'gl-product-card__name gl-label gl-label--m'})[0].text + ' adidas'
 
-#  FAIL
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = 'https://www.adidas.ru/' + item.findChildren('a', {'data-auto-id': 'glass-hockeycard-link'})[0]['href']
+
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
+                continue
+
+            item_price = item.findChildren('div', {'class': 'gl-price gl-price--s gl-price__inline___-VD1g'})[0].text
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
+
+
 async def nike_com(bot, search_requests):
-    html = await get_html('https://www.nike.com/w/new-3n82y')
-    print(html)
+    html = get_html_selenium('https://www.nike.com/w/new-3n82y', driver)
     bs = BeautifulSoup(html, 'lxml')
-    items = bs.find_all('div', {'class': 'product-card__info'})
+    items = bs.findChildren('div', {'class': 'product-card__body'}, limit=10)
     print(len(items))
+
+    for sr in search_requests:
+        for item in items:
+            url = item.findChildren('a', {'class': 'product-card__link-overlay'})[0]
+            item_name = 'Nike ' + url.text
+
+            if not compare(sr.request, item_name):
+                continue
+
+            item_url = url['href']
+
+            if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
+                continue
+
+            item_price = item.findChildren('div', {'class': 'product-card__price-wrapper'})[0].text
+
+            text = tp.common_text(item_url, item_name, item_price)
+
+            await ItemsShowedDbManager.add(item_name, item_url, sr.id, loop)
+
+            channel_id = int(sr.channel_id)
+            await bot.get_channel(channel_id).send(text)
+            print(item_url)
 
 
 #  FAIL
@@ -2468,4 +2543,4 @@ async def urbanjunglestore_com(bot, search_requests):
 if __name__ == '__main__':
     loop.run_until_complete(ItemsShowedDbManager.clear(loop))
     search_requests = [SearchRequest(1, 'air force 1', 640641207491493888)]
-    loop.run_until_complete(brandshop_ru(123, search_requests))
+    loop.run_until_complete(nike_com(123, search_requests))
