@@ -12,13 +12,6 @@ import scripts.text_parsers as tp
 from scripts.config import DEVELOPER_ID
 loop = asyncio.get_event_loop()
 
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument(
-    "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36")
-
-driver = Chrome(options=chrome_options)
-
 
 async def parse(bot):
     await bot.wait_until_ready()
@@ -30,7 +23,7 @@ async def parse(bot):
         search_requests = await SearchRequestsDbManager.get_all(loop)
 
         cur = time.time()
-
+        '''
         #  0
         
         try:
@@ -337,7 +330,7 @@ async def parse(bot):
             await user.send('Exception: urbanjunglestore_com')
 
         #  60
-
+        '''
         try:
             await adidas_ru(bot, search_requests)
         except Exception:
@@ -376,12 +369,26 @@ async def get_html(url):
             return await responce.content.read()
 
 
-def get_html_selenium(url, driver):
+def get_html_selenium(url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("start-maximized")
+    chrome_options.add_argument("disable-infobars")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-dev-shm-usag")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument(
+        "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36")
 
+    driver = Chrome(options=chrome_options)
     driver.get(url)
     time.sleep(5)
 
     html = driver.page_source
+
+    driver.close()
+    driver.quit()
 
     return html
 
@@ -2290,7 +2297,7 @@ async def yeezysupply_com(bot, search_requests):
 
 
 async def adidas_ru(bot, search_requests):
-    html = get_html_selenium('https://www.adidas.ru/muzhchiny-obuv-novinki?sort=newest-to-oldest', driver)
+    html = get_html_selenium('https://www.adidas.ru/muzhchiny-obuv-novinki?sort=newest-to-oldest')
     bs = BeautifulSoup(html, 'lxml')
     items = bs.find_all('div', {'class': 'gl-product-card glass-product-card___1PGiI'}, limit=10)
     print(len(items))
@@ -2298,7 +2305,7 @@ async def adidas_ru(bot, search_requests):
     for sr in search_requests:
         for item in items:
             item_name = item.findChildren('div', {'class': 'gl-product-card__name gl-label gl-label--m'})[0].text + ' adidas'
-
+            item_name = (item_name.encode('ascii', 'ignore')).decode("utf-8")
             if not compare(sr.request, item_name):
                 continue
 
@@ -2307,7 +2314,7 @@ async def adidas_ru(bot, search_requests):
             if await ItemsShowedDbManager.exist(item_url, sr.id, loop):
                 continue
 
-            item_price = item.findChildren('div', {'class': 'gl-price gl-price--s gl-price__inline___-VD1g'})[0].text
+            item_price = item.findChildren('span', {'class': 'gl-price__value'})[0].text
 
             text = tp.common_text(item_url, item_name, item_price)
 
@@ -2319,7 +2326,7 @@ async def adidas_ru(bot, search_requests):
 
 
 async def nike_com(bot, search_requests):
-    html = get_html_selenium('https://www.nike.com/w/new-3n82y', driver)
+    html = get_html_selenium('https://www.nike.com/w/new-3n82y')
     bs = BeautifulSoup(html, 'lxml')
     items = bs.findChildren('div', {'class': 'product-card__body'}, limit=10)
     print(len(items))
