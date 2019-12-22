@@ -20,9 +20,9 @@ def create_sync_con():
 
 class SearchRequestsDbManager:
     @staticmethod
-    async def add(request, channel_id, loop):
+    async def add(request, channel_id, type, loop):
         con, cur = await create_con(loop)
-        await cur.execute(f'insert into search_requests (request, channel_id) values(%s, %s)', (request, channel_id))
+        await cur.execute(f'insert into search_requests (request, channel_id, type) values(%s, %s, %s)', (request, channel_id, type))
         await con.commit()
         con.close()
 
@@ -35,7 +35,19 @@ class SearchRequestsDbManager:
 
         result = []
         for r in requests:
-            result.append(SearchRequest(r[0], r[1], r[2]))
+            result.append(SearchRequest(r[0], r[1], r[2], r[3]))
+        return result
+
+    @staticmethod
+    async def get_all_by_type(type, loop):
+        con, cur = await create_con(loop)
+        await cur.execute('select * from search_requests where type = %s', (type))
+        requests = await cur.fetchall()
+        con.close()
+
+        result = []
+        for r in requests:
+            result.append(SearchRequest(r[0], r[1], r[2], r[3]))
         return result
 
     @staticmethod
@@ -46,7 +58,7 @@ class SearchRequestsDbManager:
         con.close()
 
         if item is not '' and item is not None:
-            return SearchRequest(item[0], item[1], item[2])
+            return SearchRequest(item[0], item[1], item[2], item[3])
         else:
             return None
 
@@ -58,7 +70,19 @@ class SearchRequestsDbManager:
         con.close()
 
         if item is not '' and item is not None:
-            return SearchRequest(item[0], item[1], item[2])
+            return SearchRequest(item[0], item[1], item[2], item[3])
+        else:
+            return None
+
+    @staticmethod
+    async def get_by_name_and_type(request, type, loop):
+        con, cur = await create_con(loop)
+        await cur.execute('select * from search_requests where request = %s and type = %s', (request, type))
+        item = await cur.fetchone()
+        con.close()
+
+        if item is not '' and item is not None:
+            return SearchRequest(item[0], item[1], item[2], item[3])
         else:
             return None
 

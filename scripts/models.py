@@ -1,8 +1,9 @@
 class SearchRequest:
-    def __init__(self, id, request, channel_id):
+    def __init__(self, id, request, channel_id, type):
         self.id = id
         self.request = request
         self.channel_id = channel_id
+        self.type = type
 
 
 class ItemShowed:
